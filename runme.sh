@@ -1,4 +1,5 @@
 echo "Updating the code..."
+sudo chown -R root:root /var/www/cosmos-id/
 git stash
 git pull
 
