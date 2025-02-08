@@ -22,6 +22,41 @@ function handleError($message) {
     exit();
 }
 
+function removeImageFromEvent($pdo, $eventId, $imageToRemove) {
+    try {
+        // Get current images
+        $stmt = $pdo->prepare("SELECT images FROM events WHERE id = ?");
+        $stmt->execute([$eventId]);
+        $event = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$event) {
+            return false;
+        }
+
+        $currentImages = explode(',', $event['images']);
+        $newImages = array_filter($currentImages, function($img) use ($imageToRemove) {
+            return $img !== $imageToRemove;
+        });
+        
+        // Update database with new image list
+        $stmt = $pdo->prepare("UPDATE events SET images = ? WHERE id = ?");
+        $success = $stmt->execute([implode(',', $newImages), $eventId]);
+        
+        if ($success) {
+            // Try to delete the actual file
+            $filePath = __DIR__ . '/../../public/uploads/' . basename($imageToRemove);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+            return true;
+        }
+        return false;
+    } catch (PDOException $e) {
+        error_log("Database error: " . $e->getMessage());
+        return false;
+    }
+}
+
 switch ($_SERVER['REQUEST_METHOD']) {
     case 'GET':
         try {
@@ -123,15 +158,31 @@ switch ($_SERVER['REQUEST_METHOD']) {
         
     case 'DELETE':
         try {
-            $id = $_GET['id'] ?? null;
-            if (!$id) {
-                handleError("No ID provided");
+            $data = json_decode(file_get_contents("php://input"));
+            
+            if (isset($data->imageToRemove) && isset($data->eventId)) {
+                // Handle image deletion
+                $success = removeImageFromEvent($pdo, $data->eventId, $data->imageToRemove);
+                if ($success) {
+                    echo json_encode([
+                        "success" => true,
+                        "message" => "Image deleted successfully"
+                    ]);
+                } else {
+                    http_response_code(500);
+                    echo json_encode([
+                        "success" => false,
+                        "error" => "Failed to delete image"
+                    ]);
+                }
+            } else if (isset($_GET['id'])) {
+                // Handle event deletion
+                $stmt = $pdo->prepare("DELETE FROM events WHERE id = ?");
+                $stmt->execute([$_GET['id']]);
+                echo json_encode(["success" => true]);
+            } else {
+                handleError("Invalid delete request");
             }
-            
-            $stmt = $pdo->prepare("DELETE FROM events WHERE id = ?");
-            $stmt->execute([$id]);
-            
-            echo json_encode(["success" => true]);
         } catch (PDOException $e) {
             handleError($e->getMessage());
         }
