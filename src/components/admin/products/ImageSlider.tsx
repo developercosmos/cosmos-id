@@ -1,3 +1,4 @@
+
 import {
   Carousel,
   CarouselContent,
@@ -7,6 +8,7 @@ import {
 } from "@/components/ui/carousel";
 import { Button } from "../../ui/button";
 import { Trash2 } from "lucide-react";
+import { SERVER_URL } from "../../../config/serverConfig";
 
 interface ImageSliderProps {
   images: string[];
@@ -16,6 +18,11 @@ interface ImageSliderProps {
 export const ImageSlider = ({ images, onDelete }: ImageSliderProps) => {
   if (!images.length) return null;
 
+  const getImageUrl = (path: string) => {
+    if (path.startsWith('http')) return path;
+    return `${SERVER_URL}/public/uploads/${path.split('/').pop()}`;
+  };
+
   return (
     <Carousel className="w-full max-w-xl mx-auto">
       <CarouselContent>
@@ -24,12 +31,13 @@ export const ImageSlider = ({ images, onDelete }: ImageSliderProps) => {
             <div className="p-1">
               <div className="aspect-square relative overflow-hidden rounded-xl group">
                 <img
-                  src={image}
+                  src={getImageUrl(image)}
                   alt={`Product image ${index + 1}`}
                   className="object-cover w-full h-full"
                   onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/placeholder.svg';
                     console.error(`Error loading image: ${image}`);
-                    e.currentTarget.src = '/placeholder.svg';
                   }}
                 />
                 {onDelete && (

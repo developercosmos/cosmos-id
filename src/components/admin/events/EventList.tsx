@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { Button } from "../../ui/button";
@@ -45,6 +46,12 @@ const EventList = ({ events, onEdit, onDelete }: EventListProps) => {
     }
   };
 
+  const getImageUrl = (imagePath: string) => {
+    if (!imagePath) return '/placeholder.svg';
+    if (imagePath.startsWith('http')) return imagePath;
+    return `${SERVER_URL}/public/uploads/${imagePath}`;
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -59,9 +66,13 @@ const EventList = ({ events, onEdit, onDelete }: EventListProps) => {
                   <div className="flex gap-4 items-start">
                     {event.images?.[0] && (
                       <img
-                        src={event.images[0]}
+                        src={getImageUrl(event.images[0])}
                         alt={event.title}
                         className="w-24 h-24 object-cover rounded"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
                       />
                     )}
                     <div>
