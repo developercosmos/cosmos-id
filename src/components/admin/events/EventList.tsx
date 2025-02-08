@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { Button } from "../../ui/button";
 import { Event } from "../../../types/event";
 import { Pencil, Trash2 } from "lucide-react";
-import { useToast } from "../../ui/use-toast";
+import { useToast } from "../../../hooks/use-toast";
 import { SERVER_URL } from "../../../config/serverConfig";
 
 interface EventListProps {
@@ -65,9 +65,10 @@ const EventList = ({ events, onEdit, onDelete }: EventListProps) => {
       });
 
       const data = await response.json();
+      console.log("Image deletion response:", data);
 
       if (data.success) {
-        // Update the UI by filtering out the deleted image
+        // Update the local state to reflect the change
         events = events.map(event => {
           if (event.id === eventId) {
             return {
@@ -80,7 +81,7 @@ const EventList = ({ events, onEdit, onDelete }: EventListProps) => {
         
         toast({
           title: "Success",
-          description: "Image deleted successfully",
+          description: data.message || "Image deleted successfully",
         });
       } else {
         throw new Error(data.error || 'Failed to delete image');

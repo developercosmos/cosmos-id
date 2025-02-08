@@ -30,10 +30,14 @@ function removeImageFromEvent($pdo, $eventId, $imageToRemove) {
         $event = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$event) {
-            return false;
+            return ['success' => false, 'message' => 'Event not found'];
         }
 
-        $currentImages = explode(',', $event['images']);
+        $currentImages = $event['images'] ? explode(',', $event['images']) : [];
+        if (!in_array($imageToRemove, $currentImages)) {
+            return ['success' => false, 'message' => 'Image not found in database'];
+        }
+
         $newImages = array_filter($currentImages, function($img) use ($imageToRemove) {
             return $img !== $imageToRemove;
         });
@@ -43,17 +47,19 @@ function removeImageFromEvent($pdo, $eventId, $imageToRemove) {
         $success = $stmt->execute([implode(',', $newImages), $eventId]);
         
         if ($success) {
-            // Try to delete the actual file
+            // Try to delete the actual file if it exists
             $filePath = __DIR__ . '/../../public/uploads/' . basename($imageToRemove);
             if (file_exists($filePath)) {
-                unlink($filePath);
+                if (!unlink($filePath)) {
+                    return ['success' => true, 'message' => 'Database updated but file deletion failed'];
+                }
             }
-            return true;
+            return ['success' => true, 'message' => 'Image removed successfully'];
         }
-        return false;
+        return ['success' => false, 'message' => 'Failed to update database'];
     } catch (PDOException $e) {
         error_log("Database error: " . $e->getMessage());
-        return false;
+        return ['success' => false, 'message' => 'Database error occurred'];
     }
 }
 
@@ -162,17 +168,17 @@ switch ($_SERVER['REQUEST_METHOD']) {
             
             if (isset($data->imageToRemove) && isset($data->eventId)) {
                 // Handle image deletion
-                $success = removeImageFromEvent($pdo, $data->eventId, $data->imageToRemove);
-                if ($success) {
+                $result = removeImageFromEvent($pdo, $data->eventId, $data->imageToRemove);
+                if ($result['success']) {
                     echo json_encode([
                         "success" => true,
-                        "message" => "Image deleted successfully"
+                        "message" => $result['message']
                     ]);
                 } else {
                     http_response_code(500);
                     echo json_encode([
                         "success" => false,
-                        "error" => "Failed to delete image"
+                        "error" => $result['message']
                     ]);
                 }
             } else if (isset($_GET['id'])) {
