@@ -12,9 +12,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
+import { format, isPast } from "date-fns";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowRightCircle, BookOpen, Calendar, Flag, Image } from "lucide-react";
 
 const Events = () => {
   const { data: events, isLoading, error } = useQuery({
@@ -37,8 +39,10 @@ const Events = () => {
     return `${SERVER_URL}/public/uploads/${imagePath}`;
   };
 
+  const pastEvents = events?.filter(event => isPast(new Date(event.date))) || [];
+  const upcomingEvents = events?.filter(event => !isPast(new Date(event.date))) || [];
+
   if (error) {
-    console.error("Error loading events:", error);
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
@@ -62,54 +66,106 @@ const Events = () => {
           Stay updated with our latest events and activities
         </p>
 
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((n) => (
-              <Card key={n}>
-                <Skeleton className="h-64 rounded-t-lg" />
-                <CardHeader>
-                  <Skeleton className="h-8 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-20" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : !events || events.length === 0 ? (
-          <div className="text-center">
-            <p className="text-gray-600">No events available at the moment.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {events.map((event) => (
-              <Link to={`/events/${event.id}`} key={event.id}>
-                <Card className="hover:shadow-lg transition-shadow h-full">
-                  <div className="h-64 overflow-hidden">
-                    <img
-                      src={getImageUrl(event.images?.[0] || '')}
-                      alt={event.title}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder.svg';
-                      }}
-                    />
-                  </div>
-                  <CardContent className="p-6">
-                    <CardTitle className="mb-2">{event.title}</CardTitle>
-                    <CardDescription className="text-sm text-gray-500 mb-4">
-                      {event.date && format(new Date(event.date), 'MMMM dd, yyyy')}
+        <Tabs defaultValue="upcoming" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 max-w-[400px] mx-auto mb-8">
+            <TabsTrigger value="upcoming">Upcoming Events</TabsTrigger>
+            <TabsTrigger value="past">Past Events</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="upcoming">
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((n) => (
+                  <Card key={n}>
+                    <Skeleton className="h-64 rounded-t-lg" />
+                    <CardHeader>
+                      <Skeleton className="h-8 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </CardHeader>
+                    <CardContent>
+                      <Skeleton className="h-20" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {upcomingEvents.map((event) => (
+                  <Link to={`/events/${event.id}`} key={event.id}>
+                    <Card className="hover:shadow-lg transition-shadow h-full">
+                      <div className="h-64 overflow-hidden">
+                        <img
+                          src={getImageUrl(event.images?.[0] || '')}
+                          alt={event.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/placeholder.svg';
+                          }}
+                        />
+                      </div>
+                      <CardContent className="p-6">
+                        <CardTitle className="mb-2 flex items-center gap-2">
+                          <Flag className="h-5 w-5" />
+                          {event.title}
+                        </CardTitle>
+                        <CardDescription className="text-sm text-gray-500 mb-4 flex items-center gap-2">
+                          <Calendar className="h-4 w-4" />
+                          {event.date && format(new Date(event.date), 'MMMM dd, yyyy')}
+                        </CardDescription>
+                        <p className="text-gray-600 line-clamp-3 mb-4">{event.description}</p>
+                        <Button className="w-full">
+                          Register Now
+                          <ArrowRightCircle className="ml-2 h-4 w-4" />
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="past">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {pastEvents.map((event) => (
+                <Card key={event.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BookOpen className="h-5 w-5" />
+                      {event.title}
+                    </CardTitle>
+                    <CardDescription className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      {format(new Date(event.date), 'MMMM dd, yyyy')}
                     </CardDescription>
-                    <p className="text-gray-600 line-clamp-3 mb-4">{event.description}</p>
-                    <Button>Learn More</Button>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex gap-2 overflow-x-auto pb-2">
+                        {event.images?.map((image, index) => (
+                          <div key={index} className="relative flex-shrink-0">
+                            <Image className="h-4 w-4 absolute top-2 left-2 text-white" />
+                            <img
+                              src={getImageUrl(image)}
+                              alt={`${event.title} - ${index + 1}`}
+                              className="w-32 h-32 object-cover rounded"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = '/placeholder.svg';
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div dangerouslySetInnerHTML={{ __html: event.content || '' }} />
+                    </div>
                   </CardContent>
                 </Card>
-              </Link>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
       <Footer />
     </div>
