@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as fabric from "fabric";
-import { Card, CardContent } from "../../ui/card";
-import { EditorToolbar } from "./editor/EditorToolbar";
+import { Card, CardContent } from "@/components/ui/card";
+import { EditorToolbar } from "./EditorToolbar";
 
 interface EventContentEditorProps {
   initialContent?: string;
