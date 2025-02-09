@@ -85,28 +85,77 @@ export const TextControls = ({
       />
 
       <div className="flex gap-1">
-        <Button size="icon" variant="outline" onClick={() => onStyleClick('bold')}>
+        <Button 
+          type="button" 
+          size="icon" 
+          variant="outline" 
+          onClick={(e) => {
+            e.preventDefault();
+            onStyleClick('bold');
+          }}
+        >
           <Bold className="w-4 h-4" />
         </Button>
-        <Button size="icon" variant="outline" onClick={() => onStyleClick('italic')}>
+        <Button 
+          type="button" 
+          size="icon" 
+          variant="outline" 
+          onClick={(e) => {
+            e.preventDefault();
+            onStyleClick('italic');
+          }}
+        >
           <Italic className="w-4 h-4" />
         </Button>
-        <Button size="icon" variant="outline" onClick={() => onStyleClick('underline')}>
+        <Button 
+          type="button" 
+          size="icon" 
+          variant="outline" 
+          onClick={(e) => {
+            e.preventDefault();
+            onStyleClick('underline');
+          }}
+        >
           <Underline className="w-4 h-4" />
         </Button>
       </div>
 
       <div className="flex gap-1">
-        <Button size="icon" variant="outline" onClick={() => onStyleClick('alignLeft')}>
+        <Button 
+          type="button" 
+          size="icon" 
+          variant="outline" 
+          onClick={(e) => {
+            e.preventDefault();
+            onStyleClick('alignLeft');
+          }}
+        >
           <AlignLeft className="w-4 h-4" />
         </Button>
-        <Button size="icon" variant="outline" onClick={() => onStyleClick('alignCenter')}>
+        <Button 
+          type="button" 
+          size="icon" 
+          variant="outline" 
+          onClick={(e) => {
+            e.preventDefault();
+            onStyleClick('alignCenter');
+          }}
+        >
           <AlignCenter className="w-4 h-4" />
         </Button>
-        <Button size="icon" variant="outline" onClick={() => onStyleClick('alignRight')}>
+        <Button 
+          type="button" 
+          size="icon" 
+          variant="outline" 
+          onClick={(e) => {
+            e.preventDefault();
+            onStyleClick('alignRight');
+          }}
+        >
           <AlignRight className="w-4 h-4" />
         </Button>
       </div>
     </div>
   );
 };
+
