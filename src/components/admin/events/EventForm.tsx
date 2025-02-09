@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
@@ -28,7 +29,6 @@ const EventForm = ({ event, onSave, onCancel }: EventFormProps) => {
   const { toast } = useToast();
 
   const handleImageUpload = (imageUrl: string) => {
-    // Remove any path prefixes and keep only the filename
     const cleanImageUrl = imageUrl.split('/').pop() || '';
     setForm(prev => ({
       ...prev,
@@ -45,6 +45,8 @@ const EventForm = ({ event, onSave, onCancel }: EventFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    
     setIsSubmitting(true);
     
     try {
@@ -133,7 +135,7 @@ const EventForm = ({ event, onSave, onCancel }: EventFormProps) => {
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 event-content-wrapper">
             <Label>Event Content</Label>
             <EventContentEditor
               initialContent={form.content}
@@ -141,7 +143,7 @@ const EventForm = ({ event, onSave, onCancel }: EventFormProps) => {
             />
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex gap-4 mt-6">
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Saving...' : event ? 'Update Event' : 'Create Event'}
             </Button>
@@ -158,3 +160,4 @@ const EventForm = ({ event, onSave, onCancel }: EventFormProps) => {
 };
 
 export default EventForm;
+
