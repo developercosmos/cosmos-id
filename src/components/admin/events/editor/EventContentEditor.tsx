@@ -22,6 +22,7 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       width: 800,
       height: 600,
       backgroundColor: "#ffffff",
+      isDrawingMode: false,
     });
 
     if (initialContent) {
@@ -40,11 +41,21 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
         fontSize: parseInt(fontSize),
         fill: textColor,
         width: 300,
+        editable: true,
       });
+      
       fabricCanvas.add(text);
       fabricCanvas.setActiveObject(text);
       text.enterEditing();
       text.selectAll();
+      fabricCanvas.requestRenderAll();
+      const json = fabricCanvas.toJSON();
+      onChange(JSON.stringify(json));
+    });
+
+    // Handle text editing events
+    fabricCanvas.on('text:changed', (e) => {
+      fabricCanvas.requestRenderAll();
       const json = fabricCanvas.toJSON();
       onChange(JSON.stringify(json));
     });
@@ -52,6 +63,14 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
     fabricCanvas.on("object:modified", () => {
       const json = fabricCanvas.toJSON();
       onChange(JSON.stringify(json));
+    });
+
+    // Enable text editing on selection
+    fabricCanvas.on('mouse:down', (options) => {
+      if (options.target && options.target instanceof fabric.IText) {
+        options.target.enterEditing();
+        fabricCanvas.requestRenderAll();
+      }
     });
 
     setCanvas(fabricCanvas);
@@ -70,9 +89,13 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       fontSize: parseInt(fontSize),
       fill: textColor,
       width: 300,
+      editable: true,
     });
     canvas.add(text);
     canvas.setActiveObject(text);
+    text.enterEditing();
+    text.selectAll();
+    canvas.requestRenderAll();
     const json = canvas.toJSON();
     onChange(JSON.stringify(json));
   };
