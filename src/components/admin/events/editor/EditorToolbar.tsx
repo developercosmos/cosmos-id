@@ -12,7 +12,7 @@ interface EditorToolbarProps {
   textColor: string;
   setTextColor: (color: string) => void;
   onStyleClick: (style: string) => void;
-  onAddText: () => void;
+  onAddText: (e: React.MouseEvent) => void;
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onDelete: () => void;
 }
@@ -31,7 +31,7 @@ export const EditorToolbar = ({
 }: EditorToolbarProps) => {
   return (
     <div className="flex flex-wrap gap-4 mb-4 items-center border-b pb-4">
-      <Button variant="outline" onClick={onAddText}>
+      <Button type="button" variant="outline" onClick={onAddText}>
         <Type className="w-4 h-4 mr-2" />
         Add Text
       </Button>

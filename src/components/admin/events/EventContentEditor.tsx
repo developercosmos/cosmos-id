@@ -31,6 +31,35 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       });
     }
 
+    // Add double-click handler for adding text
+    fabricCanvas.on('mouse:dblclick', (options) => {
+      const pointer = fabricCanvas.getPointer(options.e);
+      const text = new fabric.IText('Click to edit text', {
+        left: pointer.x,
+        top: pointer.y,
+        fontFamily: selectedFont,
+        fontSize: parseInt(fontSize),
+        fill: textColor,
+        width: 300,
+        editable: true,
+      });
+      
+      fabricCanvas.add(text);
+      fabricCanvas.setActiveObject(text);
+      text.enterEditing();
+      text.selectAll();
+      fabricCanvas.requestRenderAll();
+      const json = fabricCanvas.toJSON();
+      onChange(JSON.stringify(json));
+    });
+
+    // Handle text editing events
+    fabricCanvas.on('text:changed', (e) => {
+      fabricCanvas.requestRenderAll();
+      const json = fabricCanvas.toJSON();
+      onChange(JSON.stringify(json));
+    });
+
     fabricCanvas.on("object:modified", () => {
       const json = fabricCanvas.toJSON();
       onChange(JSON.stringify(json));
@@ -43,8 +72,10 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
     };
   }, []);
 
-  const addText = () => {
+  const addText = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent form submission
     if (!canvas) return;
+    
     const text = new fabric.IText("Click to edit text", {
       left: 50,
       top: 50,
@@ -52,9 +83,14 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       fontSize: parseInt(fontSize),
       fill: textColor,
       width: 300,
+      editable: true,
     });
+    
     canvas.add(text);
     canvas.setActiveObject(text);
+    text.enterEditing();
+    text.selectAll();
+    canvas.requestRenderAll();
     const json = canvas.toJSON();
     onChange(JSON.stringify(json));
   };
@@ -146,3 +182,4 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
     </Card>
   );
 };
+
