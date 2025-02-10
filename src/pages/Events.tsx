@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowRightCircle, BookOpen, Calendar, Flag, Image } from "lucide-react";
+import { fabric } from 'fabric';
 
 const Events = () => {
   const { data: events, isLoading, error } = useQuery({
@@ -37,6 +38,45 @@ const Events = () => {
     if (!imagePath) return '/placeholder.svg';
     if (imagePath.startsWith('http')) return imagePath;
     return `${SERVER_URL}/public/uploads/${imagePath}`;
+  };
+
+  const renderEventContent = (content: string) => {
+    try {
+      if (!content) return null;
+      const contentObj = JSON.parse(content);
+      
+      // If it's a Fabric.js canvas JSON
+      if (contentObj.version && contentObj.objects) {
+        return (
+          <div className="mt-4">
+            {contentObj.objects.map((obj: any, index: number) => {
+              if (obj.type === 'text' || obj.type === 'i-text') {
+                return (
+                  <p
+                    key={index}
+                    style={{
+                      fontFamily: obj.fontFamily,
+                      fontSize: obj.fontSize,
+                      color: obj.fill,
+                      textAlign: obj.textAlign as any,
+                    }}
+                  >
+                    {obj.text}
+                  </p>
+                );
+              }
+              return null;
+            })}
+          </div>
+        );
+      }
+      
+      // If it's regular HTML content
+      return <div dangerouslySetInnerHTML={{ __html: content }} />;
+    } catch (e) {
+      // If parsing fails, treat it as regular HTML content
+      return <div dangerouslySetInnerHTML={{ __html: content }} />;
+    }
   };
 
   const pastEvents = events?.filter(event => isPast(new Date(event.date))) || [];
@@ -114,7 +154,8 @@ const Events = () => {
                           {event.date && format(new Date(event.date), 'MMMM dd, yyyy')}
                         </CardDescription>
                         <p className="text-gray-600 line-clamp-3 mb-4">{event.description}</p>
-                        <Button className="w-full">
+                        {renderEventContent(event.content)}
+                        <Button className="w-full mt-4">
                           Register Now
                           <ArrowRightCircle className="ml-2 h-4 w-4" />
                         </Button>
@@ -158,7 +199,7 @@ const Events = () => {
                           </div>
                         ))}
                       </div>
-                      <div dangerouslySetInnerHTML={{ __html: event.content || '' }} />
+                      {renderEventContent(event.content)}
                     </div>
                   </CardContent>
                 </Card>
@@ -173,3 +214,4 @@ const Events = () => {
 };
 
 export default Events;
+
