@@ -4,7 +4,6 @@ import { format } from "date-fns";
 import { Calendar, ArrowLeft, MapPin, Clock, Users, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SERVER_URL } from "../config/serverConfig";
 import { Event } from "../types/event";
@@ -46,6 +45,12 @@ const EventDetail = () => {
       </div>
     );
   }
+
+  const getImageUrl = (imagePath: string) => {
+    if (!imagePath) return 'https://images.unsplash.com/photo-1605810230434-7631ac76ec81';
+    if (imagePath.startsWith('http')) return imagePath;
+    return `${SERVER_URL}${imagePath}`;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -114,16 +119,17 @@ const EventDetail = () => {
                 <h2 className="text-xl font-semibold">Event Images</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {event.images.map((image, index) => (
-                    <img
-                      key={index}
-                      src={image}
-                      alt={`${event.title} - Image ${index + 1}`}
-                      className="w-full h-48 object-cover rounded-lg shadow-md"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder.svg';
-                      }}
-                    />
+                    <div key={index} className="relative aspect-[4/3] rounded-lg overflow-hidden">
+                      <img
+                        src={getImageUrl(image)}
+                        alt={`${event.title} - Image ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'https://images.unsplash.com/photo-1519389950473-47ba0277781c';
+                        }}
+                      />
+                    </div>
                   ))}
                 </div>
               </div>
