@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { Event } from "../types/event";
 import { SERVER_URL } from "../config/serverConfig";
@@ -130,7 +131,7 @@ const Events = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {upcomingEvents.map((event) => (
-                  <Link to={`/events/${event.id}`} key={event.id}>
+                  <Link to={`/events/${event.id}`} key={event.id} className="block">
                     <Card className="hover:shadow-lg transition-shadow h-full">
                       <div className="h-64 overflow-hidden">
                         <img
@@ -155,7 +156,7 @@ const Events = () => {
                         <p className="text-gray-600 line-clamp-3 mb-4">{event.description}</p>
                         {renderEventContent(event.content)}
                         <Button className="w-full mt-4">
-                          Register Now
+                          View Details & Register
                           <ArrowRightCircle className="ml-2 h-4 w-4" />
                         </Button>
                       </CardContent>
@@ -169,39 +170,45 @@ const Events = () => {
           <TabsContent value="past">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {pastEvents.map((event) => (
-                <Card key={event.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BookOpen className="h-5 w-5" />
-                      {event.title}
-                    </CardTitle>
-                    <CardDescription className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      {format(new Date(event.date), 'MMMM dd, yyyy')}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex gap-2 overflow-x-auto pb-2">
-                        {event.images?.map((image, index) => (
-                          <div key={index} className="relative flex-shrink-0">
-                            <Image className="h-4 w-4 absolute top-2 left-2 text-white" />
-                            <img
-                              src={getImageUrl(image)}
-                              alt={`${event.title} - ${index + 1}`}
-                              className="w-32 h-32 object-cover rounded"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.src = '/placeholder.svg';
-                              }}
-                            />
-                          </div>
-                        ))}
+                <Link to={`/events/${event.id}`} key={event.id} className="block">
+                  <Card className="hover:shadow-lg transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BookOpen className="h-5 w-5" />
+                        {event.title}
+                      </CardTitle>
+                      <CardDescription className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        {format(new Date(event.date), 'MMMM dd, yyyy')}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex gap-2 overflow-x-auto pb-2">
+                          {event.images?.map((image, index) => (
+                            <div key={index} className="relative flex-shrink-0">
+                              <Image className="h-4 w-4 absolute top-2 left-2 text-white" />
+                              <img
+                                src={getImageUrl(image)}
+                                alt={`${event.title} - ${index + 1}`}
+                                className="w-32 h-32 object-cover rounded"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.src = '/placeholder.svg';
+                                }}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        {renderEventContent(event.content)}
+                        <Button className="w-full">
+                          View Event Details
+                          <ArrowRightCircle className="ml-2 h-4 w-4" />
+                        </Button>
                       </div>
-                      {renderEventContent(event.content)}
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           </TabsContent>
