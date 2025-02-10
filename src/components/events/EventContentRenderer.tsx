@@ -1,5 +1,5 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Canvas } from 'fabric';
 
 interface EventContentRendererProps {
@@ -8,6 +8,7 @@ interface EventContentRendererProps {
 
 const EventContentRenderer = ({ content }: EventContentRendererProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [htmlContent, setHtmlContent] = useState<string | null>(null);
 
   useEffect(() => {
     if (!canvasRef.current || !content) return;
@@ -31,10 +32,15 @@ const EventContentRenderer = ({ content }: EventContentRendererProps) => {
       }
     } catch (e) {
       console.error('Error parsing content:', e);
-      // If parsing fails, treat it as regular HTML content
-      return <div dangerouslySetInnerHTML={{ __html: content }} />;
+      // If parsing fails, set the HTML content
+      setHtmlContent(content);
     }
   }, [content]);
+
+  // If we have HTML content, render it directly
+  if (htmlContent) {
+    return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
+  }
 
   return (
     <div className="w-full">
