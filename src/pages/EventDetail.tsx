@@ -1,20 +1,19 @@
+
 import { Link, useParams } from "react-router-dom";
 import { format } from "date-fns";
 import { Calendar, ArrowLeft, MapPin, Clock, Users, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SERVER_URL } from "../config/serverConfig";
 import { Event } from "../types/event";
 import { Skeleton } from "@/components/ui/skeleton";
-
-declare const fabric: any;
+import EventContentRenderer from "@/components/events/EventContentRenderer";
 
 const EventDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const { data: event, isLoading, error } = useQuery({
     queryKey: ['event', id],
@@ -31,56 +30,6 @@ const EventDetail = () => {
       return data as Event;
     },
   });
-
-  useEffect(() => {
-    if (canvasRef.current && event) {
-      console.log('Initializing canvas with event:', event);
-      const canvas = new fabric.Canvas(canvasRef.current);
-      canvas.setDimensions({ width: 800, height: 600 });
-
-      // Add text objects to canvas
-      const title = new fabric.IText(event.title, {
-        left: 50,
-        top: 50,
-        fontSize: 40,
-        fontFamily: 'Arial',
-      });
-
-      const dateText = new fabric.IText(format(new Date(event.date), 'MMMM dd, yyyy'), {
-        left: 50,
-        top: 100,
-        fontSize: 24,
-        fontFamily: 'Arial',
-      });
-
-      const locationText = new fabric.IText(event.description || 'Convention Center', {
-        left: 50,
-        top: 140,
-        fontSize: 20,
-        fontFamily: 'Arial',
-      });
-
-      canvas.add(title);
-      canvas.add(dateText);
-      canvas.add(locationText);
-
-      // Add event images if available
-      if (event.images && event.images.length > 0) {
-        console.log('Loading event images:', event.images);
-        event.images.forEach((imageUrl, index) => {
-          fabric.Image.fromURL(imageUrl, (img: any) => {
-            img.scale(0.5);
-            img.set({
-              left: 400,
-              top: 100 + (index * 150)
-            });
-            canvas.add(img);
-            canvas.renderAll();
-          });
-        });
-      }
-    }
-  }, [event]);
 
   if (error) {
     return (
@@ -101,20 +50,12 @@ const EventDetail = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          className="mb-6"
-          onClick={() => navigate(-1)}
-        >
+        <Button variant="ghost" className="mb-6" onClick={() => navigate(-1)}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back
         </Button>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <canvas ref={canvasRef} className="border rounded-lg shadow-lg" />
-          </div>
-
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-6">
             {isLoading ? (
               <div className="space-y-4">
@@ -134,9 +75,6 @@ const EventDetail = () => {
 
                 <div className="prose max-w-none">
                   <p>{event.description}</p>
-                  {event.content && (
-                    <div dangerouslySetInnerHTML={{ __html: event.content }} />
-                  )}
                 </div>
 
                 <div className="space-y-4">
@@ -160,28 +98,40 @@ const EventDetail = () => {
                     </li>
                   </ul>
                 </div>
-
-                {event.images && event.images.length > 0 && (
-                  <div className="space-y-4">
-                    <h2 className="text-xl font-semibold">Event Images</h2>
-                    <div className="grid grid-cols-2 gap-4">
-                      {event.images.map((image, index) => (
-                        <img
-                          key={index}
-                          src={image}
-                          alt={`Event image ${index + 1}`}
-                          className="rounded-lg shadow-md"
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <Button className="w-full md:w-auto">
-                  Register Now
-                </Button>
               </>
             ) : null}
+          </div>
+
+          <div className="space-y-6">
+            {event?.content && (
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <EventContentRenderer content={event.content} />
+              </div>
+            )}
+
+            {event?.images && event.images.length > 0 && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold">Event Images</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {event.images.map((image, index) => (
+                    <img
+                      key={index}
+                      src={image}
+                      alt={`${event.title} - Image ${index + 1}`}
+                      className="w-full h-48 object-cover rounded-lg shadow-md"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/placeholder.svg';
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <Button className="w-full">
+              Register Now
+            </Button>
           </div>
         </div>
       </div>

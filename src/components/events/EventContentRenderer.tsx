@@ -1,4 +1,5 @@
 
+import { useEffect, useRef } from 'react';
 import { Canvas } from 'fabric';
 
 interface EventContentRendererProps {
@@ -6,46 +7,44 @@ interface EventContentRendererProps {
 }
 
 const EventContentRenderer = ({ content }: EventContentRendererProps) => {
-  const renderContent = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!canvasRef.current || !content) return;
+
     try {
-      if (!content) return null;
       const contentObj = JSON.parse(content);
       
       // If it's a Fabric.js canvas JSON
       if (contentObj.version && contentObj.objects) {
-        return (
-          <div className="mt-4">
-            {contentObj.objects.map((obj: any, index: number) => {
-              if (obj.type === 'text' || obj.type === 'i-text') {
-                return (
-                  <p
-                    key={index}
-                    style={{
-                      fontFamily: obj.fontFamily,
-                      fontSize: obj.fontSize,
-                      color: obj.fill,
-                      textAlign: obj.textAlign as any,
-                    }}
-                  >
-                    {obj.text}
-                  </p>
-                );
-              }
-              return null;
-            })}
-          </div>
-        );
+        const canvas = new Canvas(canvasRef.current);
+        canvas.setDimensions({ width: 800, height: 400 });
+
+        // Load the canvas state from JSON
+        canvas.loadFromJSON(contentObj, () => {
+          canvas.renderAll();
+        });
+
+        return () => {
+          canvas.dispose();
+        };
       }
-      
-      // If it's regular HTML content
-      return <div dangerouslySetInnerHTML={{ __html: content }} />;
     } catch (e) {
+      console.error('Error parsing content:', e);
       // If parsing fails, treat it as regular HTML content
       return <div dangerouslySetInnerHTML={{ __html: content }} />;
     }
-  };
+  }, [content]);
 
-  return renderContent();
+  return (
+    <div className="w-full">
+      {content && (
+        <div className="mt-4">
+          <canvas ref={canvasRef} className="w-full rounded-lg shadow-md" />
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default EventContentRenderer;
