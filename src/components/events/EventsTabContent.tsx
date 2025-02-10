@@ -1,7 +1,8 @@
 
 import { Event } from "@/types/event";
 import { TabsContent } from "@/components/ui/tabs";
-import { Skeleton, Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import UpcomingEventCard from "./UpcomingEventCard";
 import PastEventCard from "./PastEventCard";
 
