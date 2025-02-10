@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { Event } from "../types/event";
 import { SERVER_URL } from "../config/serverConfig";
@@ -17,7 +16,7 @@ import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowRightCircle, BookOpen, Calendar, Flag, Image } from "lucide-react";
-import { fabric } from 'fabric';
+import { Canvas } from 'fabric';
 
 const Events = () => {
   const { data: events, isLoading, error } = useQuery({
@@ -214,4 +213,3 @@ const Events = () => {
 };
 
 export default Events;
-
