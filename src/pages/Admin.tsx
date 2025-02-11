@@ -1,30 +1,24 @@
 
 import Navbar from "../components/Navbar";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import ProductsManager from "../components/admin/ProductsManager";
 import CampaignManager from "../components/admin/CampaignManager";
 import EventsManager from "../components/admin/EventsManager";
 import SlideManager from "../components/admin/SlideManager";
 import UserManagement from "./admin/UserManagement";
 import ServiceCenterManager from "../components/admin/ServiceCenterManager";
+import AdminSidebar from "../components/admin/AdminSidebar";
 
 const Admin = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="container mx-auto pt-24 px-4">
+      <AdminSidebar />
+      
+      <div className="ml-64 pt-24 px-8">
         <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
         
-        <Tabs defaultValue="products" className="w-full">
-          <TabsList>
-            <TabsTrigger value="products">Products Management</TabsTrigger>
-            <TabsTrigger value="campaign">Campaign Products</TabsTrigger>
-            <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="slides">Slider Images</TabsTrigger>
-            <TabsTrigger value="users">User Management</TabsTrigger>
-            <TabsTrigger value="service-centers">Service Centers</TabsTrigger>
-          </TabsList>
-          
+        <Tabs defaultValue="products" className="w-full">          
           <TabsContent value="products">
             <ProductsManager />
           </TabsContent>
