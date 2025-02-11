@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import About from "./pages/About";
@@ -7,6 +8,7 @@ import EventDetail from "./pages/EventDetail";
 import Support from "./pages/Support";
 import Contact from "./pages/support/Contact";
 import FAQ from "./pages/support/FAQ";
+import ServiceCenter from "./pages/support/ServiceCenter";
 import Warranty from "./pages/Warranty";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
@@ -25,6 +27,7 @@ function App() {
         <Route path="/support" element={<Support />} />
         <Route path="/support/contact" element={<Contact />} />
         <Route path="/support/faq" element={<FAQ />} />
+        <Route path="/support/service-center" element={<ServiceCenter />} />
         <Route path="/warranty" element={<Warranty />} />
         <Route 
           path="/admin" 
