@@ -29,6 +29,9 @@ function App() {
         <Route path="/support/faq" element={<FAQ />} />
         <Route path="/support/service-center" element={<ServiceCenter />} />
         <Route path="/warranty" element={<Warranty />} />
+        <Route path="/service-center" element={<ServiceCenter />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/faq" element={<FAQ />} />
         <Route 
           path="/admin" 
           element={

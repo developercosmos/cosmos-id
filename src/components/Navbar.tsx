@@ -20,9 +20,9 @@ const Navbar = () => {
       path: "/support",
       icon: <HeadphonesIcon className="w-4 h-4 mr-2" />,
       subItems: [
-        { name: "Contact Us", path: "/support/contact", icon: <Phone className="w-4 h-4 mr-2" /> },
-        { name: "Service Center", path: "/support/service-center", icon: <Wrench className="w-4 h-4 mr-2" /> },
-        { name: "FAQ", path: "/support/faq", icon: <HelpCircle className="w-4 h-4 mr-2" /> },
+        { name: "Contact Us", path: "/contact", icon: <Phone className="w-4 h-4 mr-2" /> },
+        { name: "Service Center", path: "/service-center", icon: <Wrench className="w-4 h-4 mr-2" /> },
+        { name: "FAQ", path: "/faq", icon: <HelpCircle className="w-4 h-4 mr-2" /> },
       ],
     },
     { name: "Products", path: "/products", icon: <Package className="w-4 h-4 mr-2" /> },
@@ -32,7 +32,8 @@ const Navbar = () => {
     if (path === '/') {
       return location.pathname === '/';
     }
-    return location.pathname.startsWith(path);
+    // For sub-items, check if the current path includes the sub-item path
+    return location.pathname.includes(path);
   };
 
   return (
@@ -75,9 +76,9 @@ const Navbar = () => {
                           {item.subItems.map((subItem) => (
                             <Link
                               key={subItem.name}
-                              to={subItem.path}
+                              to={`${item.path}${subItem.path}`}
                               className={`flex items-center px-4 py-2 text-sm ${
-                                location.pathname === subItem.path
+                                location.pathname === `${item.path}${subItem.path}`
                                   ? 'text-primary bg-gray-50'
                                   : 'text-gray-700 hover:bg-gray-100'
                               }`}
@@ -154,9 +155,9 @@ const Navbar = () => {
                   {item.subItems.map((subItem) => (
                     <Link
                       key={subItem.name}
-                      to={subItem.path}
+                      to={`${item.path}${subItem.path}`}
                       className={`flex items-center pl-6 py-2 text-base font-medium ${
-                        location.pathname === subItem.path
+                        location.pathname === `${item.path}${subItem.path}`
                           ? 'text-primary'
                           : 'text-gray-600 hover:text-primary'
                       }`}
