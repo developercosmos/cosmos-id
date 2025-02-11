@@ -1,4 +1,6 @@
+
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 const Support = () => {
   return (
@@ -7,6 +9,7 @@ const Support = () => {
       <div className="pt-16">
         <h1>Support</h1>
       </div>
+      <Footer />
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Instagram, Linkedin, Facebook, Twitter, Youtube, MessageCircle, Music2 } from "lucide-react";
 import { Separator } from "./ui/separator";
@@ -7,120 +8,42 @@ const Footer = () => {
     product: {
       title: "Product",
       links: [
-        { name: "Cooking", href: "/products/cooking" },
-        { name: "Cooling", href: "/products/cooling" },
-        { name: "Cleaning", href: "/products/cleaning" },
-        { name: "Small Appliances", href: "/products/small-appliances" },
-        { name: "Professional Cooking", href: "/products/professional-cooking" },
-        { name: "Professional Cooling", href: "/products/professional-cooling" },
-        { name: "Energy", href: "/products/energy" },
-        { name: "Professional Small", href: "/products/professional-small" },
-        { name: "Smart Home Device", href: "/products/smart-home" },
-      ],
-    },
-    program: {
-      title: "Program",
-      links: [
-        { name: "Klaim Voucher Elektronik", href: "/program/voucher" },
-        { name: "Trade In", href: "/program/trade-in" },
-        { name: "Sewa", href: "/program/sewa" },
-        { name: "Me by COSMOS", href: "/program/me" },
-        { name: "Masterpiece", href: "/program/masterpiece" },
-        { name: "Program Manfaat Karyawan", href: "/program/employee-benefits" },
-      ],
-    },
-    info: {
-      title: "Info Lebih Lanjut",
-      links: [
-        { name: "Hubungi Kami", href: "/support/contact" },
-        { name: "FAQ", href: "/support/faq" },
-        { name: "Temukan Toko", href: "/store-locator" },
-        { name: "Promosi", href: "/promotions" },
-      ],
-    },
-    playground: {
-      title: "Lapangan Bermain Kami",
-      links: [
-        { name: "Beranda", href: "/" },
-        { name: "Professional", href: "/professional" },
-        { name: "Teknologi", href: "/technology" },
-        { name: "Kesehatan", href: "/health" },
-        { name: "Mobilitas", href: "/mobility" },
-        { name: "Energi", href: "/energy" },
+        { name: "Kitchen Appliances", href: "/products?category=Kitchen Appliances" },
+        { name: "Home Appliances", href: "/products?category=Home Appliances" },
       ],
     },
     corporate: {
-      title: "Korporasi",
+      title: "Corporate",
       links: [
-        { name: "Tentang Kami", href: "/about" },
-        { name: "Pendirikan Kami", href: "/about/foundation" },
-        { name: "Kolaborasi", href: "/collaboration" },
-        { name: "Dalam COSMOS", href: "/in-cosmos" },
-        { name: "COSMOS untuk Bisnis", href: "/business" },
-        { name: "Kemitraan", href: "/partnership" },
-        { name: "Karir", href: "/careers" },
+        { name: "Corporate", href: "/about" },
+        { name: "History", href: "/about" },
+        { name: "Awards", href: "/about" },
+        { name: "Career", href: "/about" },
+      ],
+    },
+    layanan: {
+      title: "Layanan",
+      links: [
+        { name: "Warranty", href: "/warranty" },
+        { name: "Contact Us", href: "/support/contact" },
+        { name: "Service Center", href: "/support/service-center" },
+        { name: "FAQ", href: "/support/faq" },
       ],
     },
   };
 
-  const additionalSections = [
-    {
-      title: "COSMOS Culinaria",
-      links: [{ name: "Culinaria", href: "/culinaria" }],
-    },
-    {
-      title: "Layanan",
-      links: [
-        { name: "Pusat Layanan", href: "/service-center" },
-        { name: "Pendaftaran Garansi", href: "/warranty-registration" },
-        { name: "Layanan Kontrak", href: "/contract-service" },
-      ],
-    },
-    {
-      title: "Artikel",
-      links: [
-        { name: "CSR", href: "/csr" },
-        { name: "Berita", href: "/news" },
-        { name: "Blog", href: "/blog" },
-      ],
-    },
-    {
-      title: "Nilai - Nilai COSMOS",
-      links: [
-        { name: "Pengembangan SDM", href: "/hr-development" },
-        { name: "Inklusi dan Keberagaman", href: "/diversity" },
-        { name: "Manajemen Supply Chain", href: "/supply-chain" },
-      ],
-    },
-    {
-      title: "Etika dan Kepatuhan",
-      links: [{ name: "Whistleblower", href: "/whistleblower" }],
-    },
-    {
-      title: "COSMOS Design Solutions",
-      links: [{ name: "Tentang Design Solutions", href: "/design-solutions" }],
-    },
-    {
-      title: "Download",
-      links: [
-        { name: "Buku Panduan", href: "/guide-book" },
-        { name: "Brosur", href: "/brochure" },
-      ],
-    },
-  ];
-
   return (
     <footer className="bg-white pt-8 pb-6 border-t">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-2 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {Object.entries(footerLinks).map(([key, section], index) => (
             <div key={key} className="flex">
               <div className="flex-1">
-                <h3 className="font-semibold mb-1 text-sm">{section.title}</h3>
-                <ul className="space-y-0.5">
+                <h3 className="font-semibold mb-4 text-sm">{section.title}</h3>
+                <ul className="space-y-2">
                   {section.links.map((link, idx) => (
                     <li key={idx}>
-                      <Link to={link.href} className="text-gray-600 hover:text-primary text-xs">
+                      <Link to={link.href} className="text-gray-600 hover:text-primary text-sm">
                         {link.name}
                       </Link>
                     </li>
@@ -128,25 +51,8 @@ const Footer = () => {
                 </ul>
               </div>
               {index < Object.entries(footerLinks).length - 1 && (
-                <Separator orientation="vertical" className="mx-4 h-auto" />
+                <Separator orientation="vertical" className="mx-4 h-auto hidden md:block" />
               )}
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mb-6">
-          {additionalSections.map((section, index) => (
-            <div key={index}>
-              <h3 className="font-semibold mb-1 text-sm">{section.title}</h3>
-              <ul className="space-y-0.5">
-                {section.links.map((link, linkIndex) => (
-                  <li key={linkIndex}>
-                    <Link to={link.href} className="text-gray-600 hover:text-primary text-xs">
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
             </div>
           ))}
         </div>
@@ -207,7 +113,7 @@ const Footer = () => {
           </div>
 
           <div className="text-center text-xs text-gray-600 mt-3">
-            Hak Cipta © 2025 COSMOS. Hak cipta dilindungi Undang-Undang.
+            Hak Cipta © {new Date().getFullYear()} COSMOS. Hak cipta dilindungi Undang-Undang.
           </div>
         </div>
       </div>
