@@ -1,9 +1,8 @@
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
-import { SERVER_URL } from "@/config/serverConfig";
+import { GoogleMap, useLoadScript, MarkerF, InfoWindowF } from "@react-google-maps/api";
+import { SERVER_URL, fetchConfigurations } from "@/config/serverConfig";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,11 +19,27 @@ interface ServiceCenter {
 }
 
 const ServiceCenter = () => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const [mapboxToken, setMapboxToken] = useState("");
+  const [selectedCenter, setSelectedCenter] = useState<ServiceCenter | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
+  const [mapCenter, setMapCenter] = useState<google.maps.LatLngLiteral>({ lat: -2.5489, lng: 120.9842 });
+  const [googleMapsApiKey, setGoogleMapsApiKey] = useState("");
   const { toast } = useToast();
+
+  // Fetch Google Maps API key from configurations
+  useEffect(() => {
+    const getApiKey = async () => {
+      const configs = await fetchConfigurations();
+      if (configs.GOOGLE_MAPS_API_KEY) {
+        setGoogleMapsApiKey(configs.GOOGLE_MAPS_API_KEY);
+      }
+    };
+    getApiKey();
+  }, []);
+
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: googleMapsApiKey,
+  });
 
   const { data: serviceCenters } = useQuery({
     queryKey: ['serviceCenters'],
@@ -44,19 +59,12 @@ const ServiceCenter = () => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const { latitude, longitude } = position.coords;
-          map.current?.flyTo({
-            center: [longitude, latitude],
-            zoom: 12,
-            essential: true
-          });
-
-          // Add user location marker
-          new mapboxgl.Marker({ color: "#FF0000" })
-            .setLngLat([longitude, latitude])
-            .setPopup(new mapboxgl.Popup().setHTML("<h3>Your Location</h3>"))
-            .addTo(map.current!);
-
+          const location = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          setUserLocation(location);
+          setMapCenter(location);
           toast({
             title: "Location detected",
             description: "Map has been centered to your location",
@@ -79,79 +87,22 @@ const ServiceCenter = () => {
     }
   };
 
-  useEffect(() => {
-    if (!mapContainer.current || !mapboxToken) return;
+  const handleCenterSelect = (center: ServiceCenter) => {
+    setSelectedCenter(center);
+    setMapCenter({ lat: center.latitude, lng: center.longitude });
+  };
 
-    mapboxgl.accessToken = mapboxToken;
-
-    // Initialize map centered on Indonesia
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/light-v11",
-      center: [120.9842, -2.5489],
-      zoom: 4,
-    });
-
-    // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
-
-    // Clear existing markers and add new ones based on filtered centers
-    const addMarkers = () => {
-      // Remove existing markers
-      const markers = document.getElementsByClassName('mapboxgl-marker');
-      while(markers[0]) {
-        markers[0].remove();
-      }
-
-      // Add markers for filtered service centers
-      filteredCenters?.forEach((center) => {
-        const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
-          `<h3 class="font-bold">${center.name}</h3>
-           <p>${center.address}</p>
-           <p>Phone: ${center.phone}</p>`
-        );
-
-        new mapboxgl.Marker()
-          .setLngLat([center.longitude, center.latitude])
-          .setPopup(popup)
-          .addTo(map.current!);
-      });
-    };
-
-    addMarkers();
-
-    return () => {
-      map.current?.remove();
-    };
-  }, [mapboxToken, filteredCenters]);
-
-  if (!mapboxToken) {
+  if (!isLoaded || !googleMapsApiKey) {
     return (
       <div className="min-h-screen bg-white">
         <Navbar />
         <div className="pt-20 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="p-4 border rounded-lg">
-              <h2 className="text-lg font-semibold mb-2">Enter Mapbox Token</h2>
-              <p className="text-sm text-gray-600 mb-4">
-                Please enter your Mapbox public token to view the service center locations.
-                You can find your token at{" "}
-                <a
-                  href="https://account.mapbox.com/access-tokens/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  Mapbox Access Tokens
-                </a>
+              <h2 className="text-lg font-semibold mb-2">Loading Map...</h2>
+              <p className="text-sm text-gray-600">
+                Please wait while we load the service center locations.
               </p>
-              <Input
-                type="text"
-                placeholder="Enter your Mapbox public token"
-                value={mapboxToken}
-                onChange={(e) => setMapboxToken(e.target.value)}
-                className="w-full"
-              />
             </div>
           </div>
         </div>
@@ -178,7 +129,53 @@ const ServiceCenter = () => {
                 </Button>
               </div>
               <div className="h-[600px] rounded-lg overflow-hidden shadow-lg">
-                <div ref={mapContainer} className="w-full h-full" />
+                <GoogleMap
+                  zoom={5}
+                  center={mapCenter}
+                  mapContainerClassName="w-full h-full"
+                  options={{
+                    streetViewControl: false,
+                    mapTypeControl: false,
+                    styles: [
+                      {
+                        featureType: "all",
+                        elementType: "geometry",
+                        stylers: [{ visibility: "simplified" }]
+                      }
+                    ]
+                  }}
+                >
+                  {userLocation && (
+                    <MarkerF
+                      position={userLocation}
+                      icon={{
+                        url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF0000' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E",
+                        scaledSize: new google.maps.Size(16, 16),
+                      }}
+                    />
+                  )}
+                  
+                  {filteredCenters?.map((center) => (
+                    <MarkerF
+                      key={center.id}
+                      position={{ lat: center.latitude, lng: center.longitude }}
+                      onClick={() => setSelectedCenter(center)}
+                    >
+                      {selectedCenter?.id === center.id && (
+                        <InfoWindowF
+                          position={{ lat: center.latitude, lng: center.longitude }}
+                          onCloseClick={() => setSelectedCenter(null)}
+                        >
+                          <div>
+                            <h3 className="font-bold">{center.name}</h3>
+                            <p className="text-sm">{center.address}</p>
+                            <p className="text-sm">Phone: {center.phone}</p>
+                          </div>
+                        </InfoWindowF>
+                      )}
+                    </MarkerF>
+                  ))}
+                </GoogleMap>
               </div>
             </div>
             <div className="space-y-4">
@@ -195,14 +192,10 @@ const ServiceCenter = () => {
                 {filteredCenters?.map((center) => (
                   <div
                     key={center.id}
-                    className="p-4 border rounded-lg hover:border-primary transition-colors cursor-pointer"
-                    onClick={() => {
-                      map.current?.flyTo({
-                        center: [center.longitude, center.latitude],
-                        zoom: 15,
-                        essential: true
-                      });
-                    }}
+                    className={`p-4 border rounded-lg hover:border-primary transition-colors cursor-pointer ${
+                      selectedCenter?.id === center.id ? 'border-primary' : ''
+                    }`}
+                    onClick={() => handleCenterSelect(center)}
                   >
                     <div className="flex items-start gap-2">
                       <MapPin className="w-4 h-4 mt-1 flex-shrink-0" />
