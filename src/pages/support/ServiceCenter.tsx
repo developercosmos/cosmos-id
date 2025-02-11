@@ -29,25 +29,40 @@ const ServiceCenter = () => {
   // Fetch Google Maps API key from configurations
   useEffect(() => {
     const getApiKey = async () => {
-      const configs = await fetchConfigurations();
-      if (configs.GOOGLE_MAPS_API_KEY) {
-        setGoogleMapsApiKey(configs.GOOGLE_MAPS_API_KEY);
+      try {
+        const configs = await fetchConfigurations();
+        if (configs.GOOGLE_MAPS_API_KEY) {
+          setGoogleMapsApiKey(configs.GOOGLE_MAPS_API_KEY);
+        } else {
+          toast({
+            title: "Configuration Error",
+            description: "Google Maps API key not found in configuration",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load configuration",
+          variant: "destructive",
+        });
       }
     };
     getApiKey();
-  }, []);
+  }, [toast]);
 
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: googleMapsApiKey,
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: googleMapsApiKey || "",
   });
 
-  const { data: serviceCenters } = useQuery({
+  const { data: serviceCenters, isError: isServiceCentersError } = useQuery({
     queryKey: ['serviceCenters'],
     queryFn: async () => {
       const response = await fetch(`${SERVER_URL}/src/server/serviceCenter.php`);
       if (!response.ok) throw new Error('Failed to fetch service centers');
       return response.json() as Promise<ServiceCenter[]>;
     },
+    enabled: !!googleMapsApiKey,
   });
 
   const filteredCenters = serviceCenters?.filter(center => 
@@ -89,10 +104,46 @@ const ServiceCenter = () => {
 
   const handleCenterSelect = (center: ServiceCenter) => {
     setSelectedCenter(center);
-    setMapCenter({ lat: center.latitude, lng: center.longitude });
+    setMapCenter({ lat: Number(center.latitude), lng: Number(center.longitude) });
   };
 
-  if (!isLoaded || !googleMapsApiKey) {
+  if (!googleMapsApiKey) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Navbar />
+        <div className="pt-20 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="p-4 border rounded-lg">
+              <h2 className="text-lg font-semibold mb-2">Loading Configuration...</h2>
+              <p className="text-sm text-gray-600">
+                Please wait while we load the map configuration.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Navbar />
+        <div className="pt-20 px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="p-4 border rounded-lg bg-red-50">
+              <h2 className="text-lg font-semibold mb-2 text-red-600">Error Loading Maps</h2>
+              <p className="text-sm text-red-600">
+                There was an error loading Google Maps. Please try again later.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isLoaded) {
     return (
       <div className="min-h-screen bg-white">
         <Navbar />
