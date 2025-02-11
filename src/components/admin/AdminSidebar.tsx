@@ -26,9 +26,12 @@ const NavItem = ({ icon, label, isActive, onClick }: NavItemProps) => (
   </Button>
 );
 
-const AdminSidebar = () => {
-  const [activeTab, setActiveTab] = useState("products");
+interface AdminSidebarProps {
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+}
 
+const AdminSidebar = ({ activeTab, onTabChange }: AdminSidebarProps) => {
   const navItems = [
     { value: "products", label: "Products", icon: <Package className="h-5 w-5" /> },
     { value: "campaign", label: "Campaign", icon: <Settings className="h-5 w-5" /> },
@@ -46,7 +49,7 @@ const AdminSidebar = () => {
             key={item.value}
             {...item}
             isActive={activeTab === item.value}
-            onClick={() => setActiveTab(item.value)}
+            onClick={() => onTabChange(item.value)}
           />
         ))}
       </div>
@@ -55,3 +58,4 @@ const AdminSidebar = () => {
 };
 
 export default AdminSidebar;
+

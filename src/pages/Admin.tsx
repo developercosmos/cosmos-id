@@ -8,12 +8,15 @@ import SlideManager from "../components/admin/SlideManager";
 import UserManagement from "./admin/UserManagement";
 import ServiceCenterManager from "../components/admin/ServiceCenterManager";
 import AdminSidebar from "../components/admin/AdminSidebar";
+import { useState } from "react";
 
 const Admin = () => {
+  const [activeTab, setActiveTab] = useState("products");
+
   return (
     <div className="min-h-screen bg-[#F1F0FB]">
       <Navbar />
-      <AdminSidebar />
+      <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} />
       
       <div className="ml-64 pt-24 px-8">
         <div className="mb-8">
@@ -22,7 +25,7 @@ const Admin = () => {
         </div>
         
         <div className="space-y-6">
-          <Tabs defaultValue="products" className="w-full">          
+          <Tabs value={activeTab} defaultValue="products" onValueChange={setActiveTab} className="w-full">          
             <TabsContent value="products">
               <ProductsManager />
             </TabsContent>
@@ -54,3 +57,4 @@ const Admin = () => {
 };
 
 export default Admin;
+
