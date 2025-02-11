@@ -17,7 +17,7 @@ const Navbar = () => {
     { name: "Garansi", path: "/warranty", icon: <Shield className="w-4 h-4 mr-2" /> },
     {
       name: "Support",
-      path: "#",
+      path: "/support",
       icon: <HeadphonesIcon className="w-4 h-4 mr-2" />,
       subItems: [
         { name: "Contact Us", path: "/support/contact", icon: <Phone className="w-4 h-4 mr-2" /> },
@@ -27,6 +27,13 @@ const Navbar = () => {
     },
     { name: "Products", path: "/products", icon: <Package className="w-4 h-4 mr-2" /> },
   ];
+
+  const isActiveLink = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
+  };
 
   return (
     <nav className="fixed w-full bg-white shadow-md z-50">
@@ -51,14 +58,17 @@ const Navbar = () => {
                     onMouseEnter={() => setShowSupportDropdown(true)}
                     onMouseLeave={() => setShowSupportDropdown(false)}
                   >
-                    <button className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      location.pathname.startsWith('/support') 
-                        ? 'text-primary' 
-                        : 'text-gray-600 hover:text-primary'
-                    }`}>
+                    <Link
+                      to={item.path}
+                      className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        isActiveLink(item.path)
+                          ? 'text-primary'
+                          : 'text-gray-600 hover:text-primary'
+                      }`}
+                    >
                       {item.icon}
                       {item.name}
-                    </button>
+                    </Link>
                     {showSupportDropdown && (
                       <div className="absolute left-0 mt-0 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                         <div className="py-1">
@@ -86,8 +96,8 @@ const Navbar = () => {
                     key={item.name}
                     to={item.path}
                     className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      location.pathname === item.path 
-                        ? 'text-primary' 
+                      isActiveLink(item.path)
+                        ? 'text-primary'
                         : 'text-gray-600 hover:text-primary'
                     }`}
                   >
@@ -130,14 +140,17 @@ const Navbar = () => {
             {navItems.map((item) =>
               item.subItems ? (
                 <div key={item.name} className="space-y-1">
-                  <div className={`flex items-center px-3 py-2 text-base font-medium ${
-                    location.pathname.startsWith('/support')
-                      ? 'text-primary'
-                      : 'text-gray-600'
-                  }`}>
+                  <Link
+                    to={item.path}
+                    className={`flex items-center px-3 py-2 text-base font-medium ${
+                      isActiveLink(item.path)
+                        ? 'text-primary'
+                        : 'text-gray-600'
+                    }`}
+                  >
                     {item.icon}
                     {item.name}
-                  </div>
+                  </Link>
                   {item.subItems.map((subItem) => (
                     <Link
                       key={subItem.name}
@@ -159,7 +172,7 @@ const Navbar = () => {
                   key={item.name}
                   to={item.path}
                   className={`flex items-center px-3 py-2 rounded-md text-base font-medium ${
-                    location.pathname === item.path
+                    isActiveLink(item.path)
                       ? 'text-primary'
                       : 'text-gray-600 hover:text-primary'
                   }`}
