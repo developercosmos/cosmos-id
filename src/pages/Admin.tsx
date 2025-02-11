@@ -11,38 +11,43 @@ import AdminSidebar from "../components/admin/AdminSidebar";
 
 const Admin = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F1F0FB]">
       <Navbar />
       <AdminSidebar />
       
       <div className="ml-64 pt-24 px-8">
-        <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-[#1A1F2C]">Admin Dashboard</h1>
+          <p className="text-[#8E9196] mt-2">Manage your website content and settings</p>
+        </div>
         
-        <Tabs defaultValue="products" className="w-full">          
-          <TabsContent value="products">
-            <ProductsManager />
-          </TabsContent>
-          
-          <TabsContent value="campaign">
-            <CampaignManager />
-          </TabsContent>
+        <div className="space-y-6">
+          <Tabs defaultValue="products" className="w-full">          
+            <TabsContent value="products">
+              <ProductsManager />
+            </TabsContent>
+            
+            <TabsContent value="campaign">
+              <CampaignManager />
+            </TabsContent>
 
-          <TabsContent value="events">
-            <EventsManager />
-          </TabsContent>
+            <TabsContent value="events">
+              <EventsManager />
+            </TabsContent>
 
-          <TabsContent value="slides">
-            <SlideManager />
-          </TabsContent>
+            <TabsContent value="slides">
+              <SlideManager />
+            </TabsContent>
 
-          <TabsContent value="users">
-            <UserManagement />
-          </TabsContent>
+            <TabsContent value="users">
+              <UserManagement />
+            </TabsContent>
 
-          <TabsContent value="service-centers">
-            <ServiceCenterManager />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="service-centers">
+              <ServiceCenterManager />
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
   );
