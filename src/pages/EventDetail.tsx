@@ -49,7 +49,7 @@ const EventDetail = () => {
   const getImageUrl = (imagePath: string) => {
     if (!imagePath) return 'https://images.unsplash.com/photo-1605810230434-7631ac76ec81';
     if (imagePath.startsWith('http')) return imagePath;
-    return `${SERVER_URL}${imagePath}`;
+    return `${SERVER_URL}/public/uploads/${imagePath}`;
   };
 
   return (
