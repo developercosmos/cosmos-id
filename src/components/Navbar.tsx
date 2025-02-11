@@ -32,7 +32,7 @@ const Navbar = () => {
     if (path === '/') {
       return location.pathname === '/';
     }
-    return location.pathname === path;
+    return location.pathname.startsWith(path);
   };
 
   return (
