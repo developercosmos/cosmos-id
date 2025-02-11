@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, Home, Info, Calendar, Shield, HeadphonesIcon, Phone, Wrench, HelpCircle, Package } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "./ui/button";
@@ -9,6 +9,7 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showSupportDropdown, setShowSupportDropdown] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navItems = [
     { name: "Home", path: "/", icon: <Home className="w-4 h-4 mr-2" /> },
@@ -32,20 +33,29 @@ const Navbar = () => {
     if (path === '/') {
       return location.pathname === '/';
     }
-    return location.pathname.startsWith(path);
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    setIsOpen(false);
+    setShowSupportDropdown(false);
   };
 
   return (
     <nav className="fixed w-full bg-white shadow-md z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          <Link to="/" className="flex-shrink-0">
+          <div 
+            onClick={() => handleNavigate("/")}
+            className="flex-shrink-0 cursor-pointer"
+          >
             <img
               src="/lovable-uploads/7b1f6793-4b5e-47ba-858d-1c55aa05ac49.png"
               alt="Cosmos Logo"
               className="h-12 w-auto"
             />
-          </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:block">
@@ -58,8 +68,8 @@ const Navbar = () => {
                     onMouseEnter={() => setShowSupportDropdown(true)}
                     onMouseLeave={() => setShowSupportDropdown(false)}
                   >
-                    <Link
-                      to={item.path}
+                    <button
+                      onClick={() => handleNavigate(item.path)}
                       className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                         isActiveLink(item.path)
                           ? 'text-primary'
@@ -68,33 +78,32 @@ const Navbar = () => {
                     >
                       {item.icon}
                       {item.name}
-                    </Link>
+                    </button>
                     {showSupportDropdown && (
                       <div className="absolute left-0 mt-0 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
                         <div className="py-1">
                           {item.subItems.map((subItem) => (
-                            <Link
+                            <button
                               key={subItem.name}
-                              to={subItem.path}
-                              className={`flex items-center px-4 py-2 text-sm ${
+                              onClick={() => handleNavigate(subItem.path)}
+                              className={`flex items-center w-full px-4 py-2 text-sm ${
                                 location.pathname === subItem.path
                                   ? 'text-primary bg-gray-50'
                                   : 'text-gray-700 hover:bg-gray-100'
                               }`}
-                              onClick={() => setShowSupportDropdown(false)}
                             >
                               {subItem.icon}
                               {subItem.name}
-                            </Link>
+                            </button>
                           ))}
                         </div>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <Link
+                  <button
                     key={item.name}
-                    to={item.path}
+                    onClick={() => handleNavigate(item.path)}
                     className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                       isActiveLink(item.path)
                         ? 'text-primary'
@@ -103,7 +112,7 @@ const Navbar = () => {
                   >
                     {item.icon}
                     {item.name}
-                  </Link>
+                  </button>
                 )
               )}
               <Button
@@ -140,9 +149,9 @@ const Navbar = () => {
             {navItems.map((item) =>
               item.subItems ? (
                 <div key={item.name} className="space-y-1">
-                  <Link
-                    to={item.path}
-                    className={`flex items-center px-3 py-2 text-base font-medium ${
+                  <button
+                    onClick={() => handleNavigate(item.path)}
+                    className={`flex items-center w-full px-3 py-2 text-base font-medium ${
                       isActiveLink(item.path)
                         ? 'text-primary'
                         : 'text-gray-600'
@@ -150,37 +159,35 @@ const Navbar = () => {
                   >
                     {item.icon}
                     {item.name}
-                  </Link>
+                  </button>
                   {item.subItems.map((subItem) => (
-                    <Link
+                    <button
                       key={subItem.name}
-                      to={subItem.path}
-                      className={`flex items-center pl-6 py-2 text-base font-medium ${
+                      onClick={() => handleNavigate(subItem.path)}
+                      className={`flex items-center w-full pl-6 py-2 text-base font-medium ${
                         location.pathname === subItem.path
                           ? 'text-primary'
                           : 'text-gray-600 hover:text-primary'
                       }`}
-                      onClick={() => setIsOpen(false)}
                     >
                       {subItem.icon}
                       {subItem.name}
-                    </Link>
+                    </button>
                   ))}
                 </div>
               ) : (
-                <Link
+                <button
                   key={item.name}
-                  to={item.path}
-                  className={`flex items-center px-3 py-2 rounded-md text-base font-medium ${
+                  onClick={() => handleNavigate(item.path)}
+                  className={`flex items-center w-full px-3 py-2 rounded-md text-base font-medium ${
                     isActiveLink(item.path)
                       ? 'text-primary'
                       : 'text-gray-600 hover:text-primary'
                   }`}
-                  onClick={() => setIsOpen(false)}
                 >
                   {item.icon}
                   {item.name}
-                </Link>
+                </button>
               )
             )}
             <Button
@@ -198,4 +205,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

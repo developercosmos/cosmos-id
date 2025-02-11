@@ -20,15 +20,14 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Index />} />
-        <Route path="/about/*" element={<About />} />
+        <Route path="/about" element={<About />} />
         <Route path="/products" element={<Products />} />
         <Route path="/events" element={<Events />} />
         <Route path="/events/:id" element={<EventDetail />} />
-        <Route path="/support" element={<Support />}>
-          <Route path="contact" element={<Contact />} />
-          <Route path="faq" element={<FAQ />} />
-          <Route path="service-center" element={<ServiceCenter />} />
-        </Route>
+        <Route path="/support" element={<Support />} />
+        <Route path="/support/contact" element={<Contact />} />
+        <Route path="/support/faq" element={<FAQ />} />
+        <Route path="/support/service-center" element={<ServiceCenter />} />
         <Route path="/warranty" element={<Warranty />} />
         <Route 
           path="/admin" 
