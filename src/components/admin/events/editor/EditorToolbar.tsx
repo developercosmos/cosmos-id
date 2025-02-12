@@ -1,19 +1,5 @@
 
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { Fragment } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Bold,
-  Italic,
-  Underline,
-  List,
-  ListOrdered,
-  Link,
-  Type,
-  Heading,
-  Heading2,
-  Image as ImageIcon,
-} from "lucide-react";
 import {
   $getSelection,
   $isRangeSelection,
@@ -28,11 +14,25 @@ import {
   REMOVE_LIST_COMMAND,
 } from "@lexical/list";
 import { HeadingTagType, $createHeadingNode } from "@lexical/rich-text";
+import { Button } from "@/components/ui/button";
+import {
+  Bold,
+  Italic,
+  Underline,
+  List,
+  ListOrdered,
+  Link,
+  Type,
+  Heading,
+  Heading2,
+  Image as ImageIcon,
+} from "lucide-react";
 
 export const EditorToolbar = () => {
   const [editor] = useLexicalComposerContext();
 
-  const formatHeading = (headingSize: HeadingTagType) => {
+  const formatHeading = (e: React.MouseEvent, headingSize: HeadingTagType) => {
+    e.preventDefault(); // Prevent default button behavior
     editor.update(() => {
       const selection = $getSelection();
       if ($isRangeSelection(selection)) {
@@ -41,7 +41,18 @@ export const EditorToolbar = () => {
     });
   };
 
-  const handleImageUpload = () => {
+  const handleFormatClick = (e: React.MouseEvent, format: string) => {
+    e.preventDefault(); // Prevent default button behavior
+    editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
+  };
+
+  const handleListClick = (e: React.MouseEvent, command: any) => {
+    e.preventDefault(); // Prevent default button behavior
+    editor.dispatchCommand(command, undefined);
+  };
+
+  const handleImageUpload = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default button behavior
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -74,21 +85,21 @@ export const EditorToolbar = () => {
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold")}
+        onClick={(e) => handleFormatClick(e, "bold")}
       >
         <Bold className="h-4 w-4" />
       </Button>
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic")}
+        onClick={(e) => handleFormatClick(e, "italic")}
       >
         <Italic className="h-4 w-4" />
       </Button>
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline")}
+        onClick={(e) => handleFormatClick(e, "underline")}
       >
         <Underline className="h-4 w-4" />
       </Button>
@@ -98,21 +109,21 @@ export const EditorToolbar = () => {
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => formatHeading("h1")}
+        onClick={(e) => formatHeading(e, "h1")}
       >
         <Heading className="h-4 w-4" />
       </Button>
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => formatHeading("h2")}
+        onClick={(e) => formatHeading(e, "h2")}
       >
         <Heading2 className="h-4 w-4" />
       </Button>
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => formatHeading("h2")}
+        onClick={(e) => formatHeading(e, "h2")}
       >
         <Type className="h-4 w-4" />
       </Button>
@@ -122,21 +133,21 @@ export const EditorToolbar = () => {
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)}
+        onClick={(e) => handleListClick(e, INSERT_UNORDERED_LIST_COMMAND)}
       >
         <List className="h-4 w-4" />
       </Button>
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)}
+        onClick={(e) => handleListClick(e, INSERT_ORDERED_LIST_COMMAND)}
       >
         <ListOrdered className="h-4 w-4" />
       </Button>
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined)}
+        onClick={(e) => handleListClick(e, REMOVE_LIST_COMMAND)}
       >
         <List className="h-4 w-4 line-through" />
       </Button>
