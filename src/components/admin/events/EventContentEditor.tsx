@@ -59,7 +59,7 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
   useEffect(() => {
     if (!canvas) return;
 
-    const handleDblClick = (options: fabric.TEvent<MouseEvent>) => {
+    const handleDblClick = (options: fabric.TPointerEventInfo<fabric.TPointerEvent>) => {
       const pointer = canvas.getPointer(options.e);
       const text = new fabric.IText('Click to edit text', {
         left: pointer.x,
