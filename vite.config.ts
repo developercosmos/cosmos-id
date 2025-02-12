@@ -22,4 +22,7 @@ export default defineConfig(({ mode }) => ({
   optimizeDeps: {
     include: ['draft-js', 'react-draft-wysiwyg', 'html-to-draftjs', 'draftjs-to-html'],
   },
+  define: {
+    global: 'window',
+  },
 }));
