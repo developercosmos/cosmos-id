@@ -5,6 +5,8 @@ import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
 import Color from '@tiptap/extension-color';
+import TextStyle from '@tiptap/extension-text-style';
+import FontFamily from '@tiptap/extension-font-family';
 import { Card, CardContent } from "../../ui/card";
 import { EditorToolbar } from "./editor/EditorToolbar";
 import { useEffect } from 'react';
@@ -20,6 +22,8 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       StarterKit,
       Image,
       Underline,
+      TextStyle,
+      FontFamily,
       Color,
       TextAlign.configure({
         types: ['heading', 'paragraph'],
@@ -111,11 +115,11 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
         <CardContent className="p-6">
           <EditorToolbar
             selectedFont={editor.isActive('textStyle') ? 'Arial' : 'Arial'}
-            setSelectedFont={(font) => editor.commands.setFontFamily(font)}
+            setSelectedFont={(font) => editor.chain().focus().setFontFamily(font).run()}
             fontSize={editor.isActive('textStyle') ? '16' : '16'}
-            setFontSize={(size) => editor.commands.setFontSize(size)}
+            setFontSize={(size) => editor.chain().focus().setFontSize(size).run()}
             textColor={editor.isActive('textStyle') ? '#000000' : '#000000'}
-            setTextColor={(color) => editor.commands.setColor(color)}
+            setTextColor={(color) => editor.chain().focus().setColor(color).run()}
             onStyleClick={applyTextStyle}
             onAddText={addText}
             onImageUpload={handleImageUpload}
