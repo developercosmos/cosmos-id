@@ -160,4 +160,3 @@ const EventForm = ({ event, onSave, onCancel }: EventFormProps) => {
 };
 
 export default EventForm;
-
