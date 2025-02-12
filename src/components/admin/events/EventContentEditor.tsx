@@ -25,15 +25,42 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       backgroundColor: "#ffffff",
     });
 
+    // Set up event listeners
+    fabricCanvas.on('object:modified', () => {
+      const json = fabricCanvas.toJSON();
+      onChange(JSON.stringify(json));
+    });
+
+    fabricCanvas.on('text:changed', () => {
+      const json = fabricCanvas.toJSON();
+      onChange(JSON.stringify(json));
+    });
+
+    setCanvas(fabricCanvas);
+
+    // Load initial content if available
     if (initialContent) {
-      fabricCanvas.loadFromJSON(initialContent, () => {
-        fabricCanvas.renderAll();
-      });
+      try {
+        fabricCanvas.loadFromJSON(initialContent, () => {
+          fabricCanvas.renderAll();
+          console.log("Initial content loaded successfully");
+        });
+      } catch (error) {
+        console.error("Error loading initial content:", error);
+      }
     }
 
-    // Add double-click handler for adding text
-    fabricCanvas.on('mouse:dblclick', (options) => {
-      const pointer = fabricCanvas.getPointer(options.e);
+    return () => {
+      fabricCanvas.dispose();
+    };
+  }, []);
+
+  // Add double-click handler for adding text
+  useEffect(() => {
+    if (!canvas) return;
+
+    const handleDblClick = (options: fabric.IEvent) => {
+      const pointer = canvas.getPointer(options.e);
       const text = new fabric.IText('Click to edit text', {
         left: pointer.x,
         top: pointer.y,
@@ -44,33 +71,21 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
         editable: true,
       });
       
-      fabricCanvas.add(text);
-      fabricCanvas.setActiveObject(text);
+      canvas.add(text);
+      canvas.setActiveObject(text);
       text.enterEditing();
       text.selectAll();
-      fabricCanvas.requestRenderAll();
-      const json = fabricCanvas.toJSON();
+      canvas.requestRenderAll();
+      const json = canvas.toJSON();
       onChange(JSON.stringify(json));
-    });
+    };
 
-    // Handle text editing events
-    fabricCanvas.on('text:changed', (e) => {
-      fabricCanvas.requestRenderAll();
-      const json = fabricCanvas.toJSON();
-      onChange(JSON.stringify(json));
-    });
-
-    fabricCanvas.on("object:modified", () => {
-      const json = fabricCanvas.toJSON();
-      onChange(JSON.stringify(json));
-    });
-
-    setCanvas(fabricCanvas);
+    canvas.on('mouse:dblclick', handleDblClick);
 
     return () => {
-      fabricCanvas.dispose();
+      canvas.off('mouse:dblclick', handleDblClick);
     };
-  }, []);
+  }, [canvas, selectedFont, fontSize, textColor]);
 
   const addText = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent form submission
@@ -142,6 +157,25 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       case 'alignRight':
         activeObject.set('textAlign', 'right');
         break;
+      case 'h1':
+        activeObject.set('fontSize', 32);
+        break;
+      case 'h2':
+        activeObject.set('fontSize', 24);
+        break;
+      case 'quote':
+        activeObject.set({
+          fontStyle: 'italic',
+          textAlign: 'center',
+          padding: 20
+        });
+        break;
+      case 'bulletList':
+        activeObject.set('text', '• ' + activeObject.text);
+        break;
+      case 'numberedList':
+        activeObject.set('text', '1. ' + activeObject.text);
+        break;
     }
 
     canvas.renderAll();
@@ -175,11 +209,10 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
           onDelete={deleteSelected}
         />
 
-        <div className="border border-gray-200 rounded-lg overflow-hidden">
+        <div className="border border-gray-200 rounded-lg overflow-hidden mt-4">
           <canvas ref={canvasRef} className="max-w-full" />
         </div>
       </CardContent>
     </Card>
   );
 };
-

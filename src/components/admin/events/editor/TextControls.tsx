@@ -54,6 +54,12 @@ export const TextControls = ({
     "12", "14", "16", "18", "20", "24", "28", "32", "36", "48"
   ];
 
+  const handleStyleClick = (e: React.MouseEvent, style: string) => {
+    e.preventDefault(); // Prevent form submission
+    e.stopPropagation(); // Stop event propagation
+    onStyleClick(style);
+  };
+
   return (
     <div className="flex flex-wrap gap-2 items-center">
       <Select value={selectedFont} onValueChange={setSelectedFont}>
@@ -96,7 +102,7 @@ export const TextControls = ({
           type="button" 
           size="icon" 
           variant="ghost" 
-          onClick={() => onStyleClick('bold')}
+          onClick={(e) => handleStyleClick(e, 'bold')}
           className="h-8 w-8"
         >
           <Bold className="w-4 h-4" />
@@ -105,7 +111,7 @@ export const TextControls = ({
           type="button" 
           size="icon" 
           variant="ghost" 
-          onClick={() => onStyleClick('italic')}
+          onClick={(e) => handleStyleClick(e, 'italic')}
           className="h-8 w-8"
         >
           <Italic className="w-4 h-4" />
@@ -114,7 +120,7 @@ export const TextControls = ({
           type="button" 
           size="icon" 
           variant="ghost" 
-          onClick={() => onStyleClick('underline')}
+          onClick={(e) => handleStyleClick(e, 'underline')}
           className="h-8 w-8"
         >
           <Underline className="w-4 h-4" />
@@ -128,7 +134,7 @@ export const TextControls = ({
           type="button" 
           size="icon" 
           variant="ghost" 
-          onClick={() => onStyleClick('h1')}
+          onClick={(e) => handleStyleClick(e, 'h1')}
           className="h-8 w-8"
         >
           <Heading1 className="w-4 h-4" />
@@ -137,7 +143,7 @@ export const TextControls = ({
           type="button" 
           size="icon" 
           variant="ghost" 
-          onClick={() => onStyleClick('h2')}
+          onClick={(e) => handleStyleClick(e, 'h2')}
           className="h-8 w-8"
         >
           <Heading2 className="w-4 h-4" />
@@ -146,7 +152,7 @@ export const TextControls = ({
           type="button" 
           size="icon" 
           variant="ghost" 
-          onClick={() => onStyleClick('quote')}
+          onClick={(e) => handleStyleClick(e, 'quote')}
           className="h-8 w-8"
         >
           <Quote className="w-4 h-4" />
@@ -160,7 +166,7 @@ export const TextControls = ({
           type="button" 
           size="icon" 
           variant="ghost" 
-          onClick={() => onStyleClick('alignLeft')}
+          onClick={(e) => handleStyleClick(e, 'alignLeft')}
           className="h-8 w-8"
         >
           <AlignLeft className="w-4 h-4" />
@@ -169,7 +175,7 @@ export const TextControls = ({
           type="button" 
           size="icon" 
           variant="ghost" 
-          onClick={() => onStyleClick('alignCenter')}
+          onClick={(e) => handleStyleClick(e, 'alignCenter')}
           className="h-8 w-8"
         >
           <AlignCenter className="w-4 h-4" />
@@ -178,7 +184,7 @@ export const TextControls = ({
           type="button" 
           size="icon" 
           variant="ghost" 
-          onClick={() => onStyleClick('alignRight')}
+          onClick={(e) => handleStyleClick(e, 'alignRight')}
           className="h-8 w-8"
         >
           <AlignRight className="w-4 h-4" />
@@ -192,7 +198,7 @@ export const TextControls = ({
           type="button" 
           size="icon" 
           variant="ghost" 
-          onClick={() => onStyleClick('bulletList')}
+          onClick={(e) => handleStyleClick(e, 'bulletList')}
           className="h-8 w-8"
         >
           <List className="w-4 h-4" />
@@ -201,7 +207,7 @@ export const TextControls = ({
           type="button" 
           size="icon" 
           variant="ghost" 
-          onClick={() => onStyleClick('numberedList')}
+          onClick={(e) => handleStyleClick(e, 'numberedList')}
           className="h-8 w-8"
         >
           <ListOrdered className="w-4 h-4" />
