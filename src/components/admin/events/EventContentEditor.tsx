@@ -1,15 +1,11 @@
 
-import { useEffect, useState } from "react";
-import { LexicalComposer } from "@lexical/react/LexicalComposer";
-import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
-import { ContentEditable } from "@lexical/react/LexicalContentEditable";
-import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import { $createParagraphNode, $getRoot } from "lexical";
-import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
-import * as fabric from "fabric";
+import { useState, useEffect } from "react";
+import { EditorState, convertToRaw, ContentState } from "draft-js";
+import { Editor } from "react-draft-wysiwyg";
+import htmlToDraft from "html-to-draftjs";
+import draftToHtml from "draftjs-to-html";
+import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
 import { Card, CardContent } from "@/components/ui/card";
-import { EditorToolbar } from "./editor/EditorToolbar";
 import { useToast } from "@/components/ui/use-toast";
 
 interface EventContentEditorProps {
@@ -17,162 +13,100 @@ interface EventContentEditorProps {
   onChange: (content: string) => void;
 }
 
-function EditorController({ onChange }: { onChange: (html: string) => void }) {
-  const [editor] = useLexicalComposerContext();
+export const EventContentEditor = ({ initialContent, onChange }: EventContentEditorProps) => {
+  const { toast } = useToast();
+  const [editorState, setEditorState] = useState(() => {
+    if (initialContent) {
+      const contentBlock = htmlToDraft(initialContent);
+      const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
+      return EditorState.createWithContent(contentState);
+    }
+    return EditorState.createEmpty();
+  });
 
   useEffect(() => {
-    editor.registerUpdateListener(({ editorState }) => {
-      editorState.read(() => {
-        const htmlString = $generateHtmlFromNodes(editor);
-        onChange(htmlString);
-      });
-    });
-  }, [editor, onChange]);
+    const currentContent = editorState.getCurrentContent();
+    const htmlContent = draftToHtml(convertToRaw(currentContent));
+    onChange(htmlContent);
+  }, [editorState, onChange]);
 
-  return null;
-}
-
-export const EventContentEditor = ({ initialContent, onChange }: EventContentEditorProps) => {
-  const [selectedFont, setSelectedFont] = useState("Arial");
-  const [fontSize, setFontSize] = useState("16");
-  const [textColor, setTextColor] = useState("#000000");
-  const { toast } = useToast();
-  const [imageCanvas, setImageCanvas] = useState<fabric.Canvas | null>(null);
-
-  const initialConfig = {
-    namespace: "EventEditor",
-    theme: {
-      paragraph: "mb-2",
-      text: {
-        bold: "font-bold",
-        italic: "italic",
-        underline: "underline",
-      },
-    },
-    onError: (error: Error) => {
-      console.error(error);
-      toast({
-        title: "Editor Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
+  const handleEditorStateChange = (newEditorState: EditorState) => {
+    setEditorState(newEditorState);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.[0]) return;
-    
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (!event.target?.result) return;
-      
-      const img = new Image();
-      img.src = event.target.result.toString();
-      img.onload = () => {
-        if (!imageCanvas) {
-          const canvas = new fabric.Canvas('image-canvas', {
-            width: 800,
-            height: 400,
-          });
-          setImageCanvas(canvas);
-        }
-
-        const fabricImage = new fabric.Image(img, {
-          left: 50,
-          top: 50,
-          cornerSize: 10,
-          hasControls: true,
-          hasBorders: true,
-          selectable: true,
-        });
-
-        const maxSize = 300;
-        const scale = Math.min(maxSize / fabricImage.width!, maxSize / fabricImage.height!);
-        fabricImage.scale(scale);
-
-        imageCanvas?.clear();
-        imageCanvas?.add(fabricImage);
-        imageCanvas?.renderAll();
-
-        // Insert the canvas into the editor
-        const canvasElement = document.getElementById('image-canvas') as HTMLCanvasElement;
-        if (canvasElement) {
-          const imgSrc = canvasElement.toDataURL();
-          const imageNode = document.createElement('img');
-          imageNode.src = imgSrc;
-          const selection = window.getSelection();
-          if (selection?.rangeCount) {
-            selection.getRangeAt(0).insertNode(imageNode);
-          }
-        }
+  const uploadCallback = (file: File): Promise<{ data: { link: string } }> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        resolve({ data: { link: e.target?.result as string } });
       };
-    };
-    reader.readAsDataURL(e.target.files[0]);
+      reader.onerror = (error) => {
+        toast({
+          title: "Upload Error",
+          description: "Failed to upload image",
+          variant: "destructive",
+        });
+        reject(error);
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
-  const applyTextStyle = (style: string) => {
-    const editor = document.querySelector('[contenteditable="true"]');
-    if (!editor) return;
+  const editorStyle = {
+    padding: '1rem',
+    minHeight: '400px',
+    backgroundColor: 'white',
+  };
 
-    const selection = window.getSelection();
-    if (!selection?.rangeCount) return;
-
-    switch (style) {
-      case 'bold':
-        document.execCommand('bold', false);
-        break;
-      case 'italic':
-        document.execCommand('italic', false);
-        break;
-      case 'underline':
-        document.execCommand('underline', false);
-        break;
-      case 'alignLeft':
-        document.execCommand('justifyLeft', false);
-        break;
-      case 'alignCenter':
-        document.execCommand('justifyCenter', false);
-        break;
-      case 'alignRight':
-        document.execCommand('justifyRight', false);
-        break;
-    }
+  const toolbarStyle = {
+    backgroundColor: 'white',
+    borderBottom: '1px solid #e5e7eb',
+    marginBottom: '0.5rem',
   };
 
   return (
     <Card className="w-full">
       <CardContent className="p-6">
-        <EditorToolbar
-          selectedFont={selectedFont}
-          setSelectedFont={setSelectedFont}
-          fontSize={fontSize}
-          setFontSize={setFontSize}
-          textColor={textColor}
-          setTextColor={setTextColor}
-          onStyleClick={applyTextStyle}
-          onAddText={() => {}}
-          onImageUpload={handleImageUpload}
-          onDelete={() => document.execCommand('delete', false)}
-        />
-
-        <div className="border border-gray-200 rounded-lg overflow-hidden">
-          <LexicalComposer initialConfig={initialConfig}>
-            <div className="relative min-h-[400px] p-4">
-              <RichTextPlugin
-                contentEditable={
-                  <ContentEditable className="min-h-[400px] outline-none" />
-                }
-                placeholder={
-                  <div className="absolute top-4 left-4 text-gray-400">
-                    Start typing...
-                  </div>
-                }
-              />
-              <HistoryPlugin />
-              <EditorController onChange={onChange} />
-            </div>
-          </LexicalComposer>
-          <canvas id="image-canvas" style={{ display: 'none' }} />
+        <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+          <Editor
+            editorState={editorState}
+            onEditorStateChange={handleEditorStateChange}
+            wrapperClassName="rounded-lg border border-gray-200"
+            editorClassName="px-4 py-2 min-h-[400px] focus:outline-none"
+            toolbarClassName="border-b border-gray-200"
+            editorStyle={editorStyle}
+            toolbarStyle={toolbarStyle}
+            toolbar={{
+              options: [
+                'inline', 
+                'blockType', 
+                'fontSize', 
+                'fontFamily',
+                'list', 
+                'textAlign', 
+                'colorPicker', 
+                'link', 
+                'embedded', 
+                'emoji', 
+                'image', 
+                'remove', 
+                'history'
+              ],
+              inline: {
+                options: ['bold', 'italic', 'underline', 'strikethrough', 'monospace'],
+              },
+              image: {
+                uploadCallback,
+                previewImage: true,
+                inputAccept: 'image/gif,image/jpeg,image/jpg,image/png,image/svg',
+                alt: { present: true, mandatory: false },
+                defaultSize: {
+                  height: '300px',
+                  width: 'auto',
+                },
+              },
+            }}
+          />
         </div>
       </CardContent>
     </Card>
