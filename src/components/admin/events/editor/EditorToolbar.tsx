@@ -6,6 +6,7 @@ import {
   FORMAT_TEXT_COMMAND,
   $createParagraphNode,
   $createTextNode,
+  TextFormatType,
 } from "lexical";
 import { $setBlocksType } from "@lexical/selection";
 import { 
@@ -32,7 +33,7 @@ export const EditorToolbar = () => {
   const [editor] = useLexicalComposerContext();
 
   const formatHeading = (e: React.MouseEvent, headingSize: HeadingTagType) => {
-    e.preventDefault(); // Prevent default button behavior
+    e.preventDefault();
     editor.update(() => {
       const selection = $getSelection();
       if ($isRangeSelection(selection)) {
@@ -41,18 +42,18 @@ export const EditorToolbar = () => {
     });
   };
 
-  const handleFormatClick = (e: React.MouseEvent, format: string) => {
-    e.preventDefault(); // Prevent default button behavior
+  const handleFormatClick = (e: React.MouseEvent, format: TextFormatType) => {
+    e.preventDefault();
     editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
   };
 
   const handleListClick = (e: React.MouseEvent, command: any) => {
-    e.preventDefault(); // Prevent default button behavior
+    e.preventDefault();
     editor.dispatchCommand(command, undefined);
   };
 
   const handleImageUpload = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent default button behavior
+    e.preventDefault();
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -85,21 +86,21 @@ export const EditorToolbar = () => {
       <Button
         variant="ghost"
         size="sm"
-        onClick={(e) => handleFormatClick(e, "bold")}
+        onClick={(e) => handleFormatClick(e, "bold" as TextFormatType)}
       >
         <Bold className="h-4 w-4" />
       </Button>
       <Button
         variant="ghost"
         size="sm"
-        onClick={(e) => handleFormatClick(e, "italic")}
+        onClick={(e) => handleFormatClick(e, "italic" as TextFormatType)}
       >
         <Italic className="h-4 w-4" />
       </Button>
       <Button
         variant="ghost"
         size="sm"
-        onClick={(e) => handleFormatClick(e, "underline")}
+        onClick={(e) => handleFormatClick(e, "underline" as TextFormatType)}
       >
         <Underline className="h-4 w-4" />
       </Button>
