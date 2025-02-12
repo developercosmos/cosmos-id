@@ -15,6 +15,11 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
+  Heading1,
+  Heading2,
+  Quote,
+  List,
+  ListOrdered
 } from "lucide-react";
 
 interface TextControlsProps {
@@ -84,78 +89,124 @@ export const TextControls = ({
         className="w-12 h-8 p-0 border-none"
       />
 
+      <div className="h-6 w-px bg-gray-200" />
+
       <div className="flex gap-1">
         <Button 
           type="button" 
           size="icon" 
-          variant="outline" 
-          onClick={(e) => {
-            e.preventDefault();
-            onStyleClick('bold');
-          }}
+          variant="ghost" 
+          onClick={() => onStyleClick('bold')}
+          className="h-8 w-8"
         >
           <Bold className="w-4 h-4" />
         </Button>
         <Button 
           type="button" 
           size="icon" 
-          variant="outline" 
-          onClick={(e) => {
-            e.preventDefault();
-            onStyleClick('italic');
-          }}
+          variant="ghost" 
+          onClick={() => onStyleClick('italic')}
+          className="h-8 w-8"
         >
           <Italic className="w-4 h-4" />
         </Button>
         <Button 
           type="button" 
           size="icon" 
-          variant="outline" 
-          onClick={(e) => {
-            e.preventDefault();
-            onStyleClick('underline');
-          }}
+          variant="ghost" 
+          onClick={() => onStyleClick('underline')}
+          className="h-8 w-8"
         >
           <Underline className="w-4 h-4" />
         </Button>
       </div>
 
+      <div className="h-6 w-px bg-gray-200" />
+
       <div className="flex gap-1">
         <Button 
           type="button" 
           size="icon" 
-          variant="outline" 
-          onClick={(e) => {
-            e.preventDefault();
-            onStyleClick('alignLeft');
-          }}
+          variant="ghost" 
+          onClick={() => onStyleClick('h1')}
+          className="h-8 w-8"
+        >
+          <Heading1 className="w-4 h-4" />
+        </Button>
+        <Button 
+          type="button" 
+          size="icon" 
+          variant="ghost" 
+          onClick={() => onStyleClick('h2')}
+          className="h-8 w-8"
+        >
+          <Heading2 className="w-4 h-4" />
+        </Button>
+        <Button 
+          type="button" 
+          size="icon" 
+          variant="ghost" 
+          onClick={() => onStyleClick('quote')}
+          className="h-8 w-8"
+        >
+          <Quote className="w-4 h-4" />
+        </Button>
+      </div>
+
+      <div className="h-6 w-px bg-gray-200" />
+
+      <div className="flex gap-1">
+        <Button 
+          type="button" 
+          size="icon" 
+          variant="ghost" 
+          onClick={() => onStyleClick('alignLeft')}
+          className="h-8 w-8"
         >
           <AlignLeft className="w-4 h-4" />
         </Button>
         <Button 
           type="button" 
           size="icon" 
-          variant="outline" 
-          onClick={(e) => {
-            e.preventDefault();
-            onStyleClick('alignCenter');
-          }}
+          variant="ghost" 
+          onClick={() => onStyleClick('alignCenter')}
+          className="h-8 w-8"
         >
           <AlignCenter className="w-4 h-4" />
         </Button>
         <Button 
           type="button" 
           size="icon" 
-          variant="outline" 
-          onClick={(e) => {
-            e.preventDefault();
-            onStyleClick('alignRight');
-          }}
+          variant="ghost" 
+          onClick={() => onStyleClick('alignRight')}
+          className="h-8 w-8"
         >
           <AlignRight className="w-4 h-4" />
+        </Button>
+      </div>
+
+      <div className="h-6 w-px bg-gray-200" />
+
+      <div className="flex gap-1">
+        <Button 
+          type="button" 
+          size="icon" 
+          variant="ghost" 
+          onClick={() => onStyleClick('bulletList')}
+          className="h-8 w-8"
+        >
+          <List className="w-4 h-4" />
+        </Button>
+        <Button 
+          type="button" 
+          size="icon" 
+          variant="ghost" 
+          onClick={() => onStyleClick('numberedList')}
+          className="h-8 w-8"
+        >
+          <ListOrdered className="w-4 h-4" />
         </Button>
       </div>
     </div>
   );
 };
-
