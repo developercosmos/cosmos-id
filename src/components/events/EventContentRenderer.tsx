@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState } from 'react';
-import fabric from 'fabric';
+import { Canvas } from 'fabric';
 
 interface EventContentRendererProps {
   content: string;
@@ -18,7 +18,7 @@ const EventContentRenderer = ({ content }: EventContentRendererProps) => {
       
       // If it's a Fabric.js canvas JSON
       if (contentObj.version && contentObj.objects) {
-        const canvas = new fabric.Canvas(canvasRef.current);
+        const canvas = new Canvas(canvasRef.current);
         canvas.setDimensions({ width: 800, height: 400 });
 
         // Load the canvas state from JSON
