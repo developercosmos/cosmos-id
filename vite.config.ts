@@ -25,4 +25,9 @@ export default defineConfig(({ mode }) => ({
   define: {
     global: 'window',
   },
+  build: {
+    rollupOptions: {
+      external: ['alloyeditor']
+    }
+  }
 }));

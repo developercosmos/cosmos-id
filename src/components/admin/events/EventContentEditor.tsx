@@ -1,9 +1,15 @@
 
 import { useEffect, useRef } from "react";
-import AlloyEditor from 'alloyeditor';
 import 'alloyeditor/dist/alloy-editor/assets/alloy-editor-ocean.css';
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+
+declare global {
+  interface Window {
+    AlloyEditor: any;
+    CKEDITOR: any;
+  }
+}
 
 interface EventContentEditorProps {
   initialContent?: string;
@@ -16,118 +22,124 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!editorRef.current) return;
+    const initializeEditor = () => {
+      if (!editorRef.current || !window.AlloyEditor) return;
 
-    // Initialize AlloyEditor
-    const editor = AlloyEditor.editable(editorRef.current, {
-      allowedContent: true,
-      enterMode: 2, // ENTER_BR
-      toolbars: {
-        styles: {
-          selections: [
-            {
-              name: 'text',
-              buttons: [
-                'bold',
-                'italic',
-                'underline',
-                'link',
-                'paragraphLeft',
-                'paragraphCenter',
-                'paragraphRight',
-                'h1',
-                'h2',
-                'ul',
-                'ol',
-                'quote',
-                'image',
-                'table'
-              ],
-              test: AlloyEditor.SelectionTest.text
-            },
-            {
-              name: 'table',
-              buttons: ['tableRow', 'tableColumn', 'tableCell', 'tableHeading'],
-              test: AlloyEditor.SelectionTest.table
-            }
-          ],
-          tabIndex: 1
-        }
-      },
-      extraPlugins: [
-        'ae_autolink',
-        'ae_dragresize',
-        'ae_imagealignment',
-        'ae_placeholder',
-        'ae_selectionregion',
-        'ae_uicore',
-        'ae_tableresize',
-        'table',
-        'tabletools'
-      ],
-      removePlugins: 'contextmenu,elementspath,resize',
-      height: '400px',
-      placeholder: 'Start writing your content...'
-    });
+      const editor = window.AlloyEditor.editable(editorRef.current, {
+        allowedContent: true,
+        enterMode: 2, // ENTER_BR
+        toolbars: {
+          styles: {
+            selections: [
+              {
+                name: 'text',
+                buttons: [
+                  'bold',
+                  'italic',
+                  'underline',
+                  'link',
+                  'paragraphLeft',
+                  'paragraphCenter',
+                  'paragraphRight',
+                  'h1',
+                  'h2',
+                  'ul',
+                  'ol',
+                  'quote',
+                  'image',
+                  'table'
+                ],
+                test: window.AlloyEditor.SelectionTest.text
+              },
+              {
+                name: 'table',
+                buttons: ['tableRow', 'tableColumn', 'tableCell', 'tableHeading'],
+                test: window.AlloyEditor.SelectionTest.table
+              }
+            ],
+            tabIndex: 1
+          }
+        },
+        extraPlugins: [
+          'ae_autolink',
+          'ae_dragresize',
+          'ae_imagealignment',
+          'ae_placeholder',
+          'ae_selectionregion',
+          'ae_uicore',
+          'ae_tableresize',
+          'table',
+          'tabletools'
+        ],
+        removePlugins: 'contextmenu,elementspath,resize',
+        height: '400px',
+        placeholder: 'Start writing your content...'
+      });
 
-    // Set initial content if provided
-    if (initialContent) {
-      editor.get('nativeEditor').setData(initialContent);
-    }
+      if (initialContent) {
+        editor.get('nativeEditor').setData(initialContent);
+      }
 
-    // Handle content changes
-    editor.get('nativeEditor').on('change', () => {
-      const content = editor.get('nativeEditor').getData();
-      onChange(content);
-    });
+      editor.get('nativeEditor').on('change', () => {
+        const content = editor.get('nativeEditor').getData();
+        onChange(content);
+      });
 
-    // Handle image uploads
-    editor.get('nativeEditor').on('fileUploadRequest', (event: any) => {
-      const fileLoader = event.data.fileLoader;
-      const file = fileLoader.file;
-      const reader = new FileReader();
+      editor.get('nativeEditor').on('fileUploadRequest', (event: any) => {
+        const fileLoader = event.data.fileLoader;
+        const file = fileLoader.file;
+        const reader = new FileReader();
 
-      reader.onload = function(e) {
-        if (e.target?.result) {
-          fileLoader.uploadUrl = e.target.result as string;
-          event.stop();
-          fileLoader.uploaded = true;
-          fileLoader.xhr = {
-            status: 200,
-            responseText: JSON.stringify({
-              uploaded: 1,
-              url: e.target.result
-            })
-          };
-          fileLoader.fire('uploaded');
+        reader.onload = function(e) {
+          if (e.target?.result) {
+            fileLoader.uploadUrl = e.target.result as string;
+            event.stop();
+            fileLoader.uploaded = true;
+            fileLoader.xhr = {
+              status: 200,
+              responseText: JSON.stringify({
+                uploaded: 1,
+                url: e.target.result
+              })
+            };
+            fileLoader.fire('uploaded');
+            toast({
+              title: "Success",
+              description: "Image uploaded successfully",
+            });
+          }
+        };
+
+        reader.onerror = () => {
           toast({
-            title: "Success",
-            description: "Image uploaded successfully",
+            title: "Error",
+            description: "Failed to upload image",
+            variant: "destructive",
           });
-        }
-      };
+        };
 
-      reader.onerror = () => {
-        toast({
-          title: "Error",
-          description: "Failed to upload image",
-          variant: "destructive",
-        });
-      };
+        reader.readAsDataURL(file);
+        event.stop();
+      });
 
-      reader.readAsDataURL(file);
-      event.stop();
-    });
+      editorInstanceRef.current = editor;
+    };
 
-    editorInstanceRef.current = editor;
+    // Check if AlloyEditor is loaded
+    const checkAlloyEditor = setInterval(() => {
+      if (window.AlloyEditor) {
+        clearInterval(checkAlloyEditor);
+        initializeEditor();
+      }
+    }, 100);
 
-    // Cleanup
     return () => {
+      clearInterval(checkAlloyEditor);
       if (editorInstanceRef.current) {
         editorInstanceRef.current.destroy();
       }
     };
-  }, []);
+  }, [initialContent, onChange]);
 
   return (
     <Card className="w-full">
