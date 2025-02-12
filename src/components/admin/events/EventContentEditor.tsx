@@ -1,8 +1,13 @@
 
-import { useEffect, useRef, useState } from "react";
-import * as fabric from "fabric";
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Image from '@tiptap/extension-image';
+import TextAlign from '@tiptap/extension-text-align';
+import Underline from '@tiptap/extension-underline';
+import Color from '@tiptap/extension-color';
 import { Card, CardContent } from "../../ui/card";
 import { EditorToolbar } from "./editor/EditorToolbar";
+import { useEffect } from 'react';
 
 interface EventContentEditorProps {
   initialContent?: string;
@@ -10,177 +15,115 @@ interface EventContentEditorProps {
 }
 
 export const EventContentEditor = ({ initialContent, onChange }: EventContentEditorProps) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
-  const [selectedFont, setSelectedFont] = useState("Arial");
-  const [fontSize, setFontSize] = useState("16");
-  const [textColor, setTextColor] = useState("#000000");
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Image,
+      Underline,
+      Color,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+    ],
+    content: initialContent || '',
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+    },
+  });
 
   useEffect(() => {
-    if (!canvasRef.current) return;
-
-    const fabricCanvas = new fabric.Canvas(canvasRef.current, {
-      width: 800,
-      height: 600,
-      backgroundColor: "#ffffff",
-      isDrawingMode: false,
-    });
-
-    if (initialContent) {
-      fabricCanvas.loadFromJSON(initialContent, () => {
-        fabricCanvas.renderAll();
-      });
+    if (editor && initialContent) {
+      editor.commands.setContent(initialContent);
     }
-
-    // Add double-click handler for adding text
-    fabricCanvas.on('mouse:dblclick', (options) => {
-      const pointer = fabricCanvas.getPointer(options.e);
-      const text = new fabric.IText('Click to edit text', {
-        left: pointer.x,
-        top: pointer.y,
-        fontFamily: selectedFont,
-        fontSize: parseInt(fontSize),
-        fill: textColor,
-        width: 300,
-        editable: true,
-      });
-      
-      fabricCanvas.add(text);
-      fabricCanvas.setActiveObject(text);
-      text.enterEditing();
-      text.selectAll();
-      fabricCanvas.requestRenderAll();
-      const json = fabricCanvas.toJSON();
-      onChange(JSON.stringify(json));
-    });
-
-    // Handle text editing events
-    fabricCanvas.on('text:changed', () => {
-      fabricCanvas.requestRenderAll();
-      const json = fabricCanvas.toJSON();
-      onChange(JSON.stringify(json));
-    });
-
-    fabricCanvas.on("object:modified", () => {
-      const json = fabricCanvas.toJSON();
-      onChange(JSON.stringify(json));
-    });
-
-    // Enable text editing on selection
-    fabricCanvas.on('mouse:down', (options) => {
-      if (options.target && options.target instanceof fabric.IText) {
-        options.target.enterEditing();
-        fabricCanvas.requestRenderAll();
-      }
-    });
-
-    setCanvas(fabricCanvas);
-
-    return () => {
-      fabricCanvas.dispose();
-    };
-  }, [initialContent, selectedFont, fontSize, textColor]);
+  }, [editor, initialContent]);
 
   const addText = () => {
-    if (!canvas) return;
-    const text = new fabric.IText("Click to edit text", {
-      left: 50,
-      top: 50,
-      fontFamily: selectedFont,
-      fontSize: parseInt(fontSize),
-      fill: textColor,
-      width: 300,
-      editable: true,
-    });
-    canvas.add(text);
-    canvas.setActiveObject(text);
-    text.enterEditing();
-    text.selectAll();
-    canvas.requestRenderAll();
-    const json = canvas.toJSON();
-    onChange(JSON.stringify(json));
+    if (!editor) return;
+    editor.commands.insertContent('<p>New text</p>');
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!canvas || !e.target.files?.[0]) return;
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!editor || !e.target.files?.[0]) return;
     
+    const file = e.target.files[0];
     const reader = new FileReader();
+    
     reader.onload = (event) => {
       if (!event.target?.result) return;
-      
-      fabric.Image.fromURL(event.target.result.toString(), {
-        crossOrigin: 'anonymous'
-      }).then((img) => {
-        img.scale(0.5);
-        canvas.add(img);
-        canvas.setActiveObject(img);
-        const json = canvas.toJSON();
-        onChange(JSON.stringify(json));
-      });
+      editor.commands.setImage({ src: event.target.result.toString() });
     };
-    reader.readAsDataURL(e.target.files[0]);
+    
+    reader.readAsDataURL(file);
   };
 
   const applyTextStyle = (style: string) => {
-    if (!canvas) return;
-    const activeObject = canvas.getActiveObject();
-    if (!activeObject || !(activeObject instanceof fabric.IText)) return;
+    if (!editor) return;
 
     switch (style) {
       case 'bold':
-        activeObject.set('fontWeight', activeObject.fontWeight === 'bold' ? 'normal' : 'bold');
+        editor.commands.toggleBold();
         break;
       case 'italic':
-        activeObject.set('fontStyle', activeObject.fontStyle === 'italic' ? 'normal' : 'italic');
+        editor.commands.toggleItalic();
         break;
       case 'underline':
-        activeObject.set('underline', !activeObject.underline);
+        editor.commands.toggleUnderline();
         break;
       case 'alignLeft':
-        activeObject.set('textAlign', 'left');
+        editor.commands.setTextAlign('left');
         break;
       case 'alignCenter':
-        activeObject.set('textAlign', 'center');
+        editor.commands.setTextAlign('center');
         break;
       case 'alignRight':
-        activeObject.set('textAlign', 'right');
+        editor.commands.setTextAlign('right');
+        break;
+      case 'h1':
+        editor.commands.toggleHeading({ level: 1 });
+        break;
+      case 'h2':
+        editor.commands.toggleHeading({ level: 2 });
+        break;
+      case 'quote':
+        editor.commands.toggleBlockquote();
+        break;
+      case 'bulletList':
+        editor.commands.toggleBulletList();
+        break;
+      case 'numberedList':
+        editor.commands.toggleOrderedList();
         break;
     }
-
-    canvas.renderAll();
-    const json = canvas.toJSON();
-    onChange(JSON.stringify(json));
   };
 
   const deleteSelected = () => {
-    if (!canvas) return;
-    const activeObject = canvas.getActiveObject();
-    if (activeObject) {
-      canvas.remove(activeObject);
-      const json = canvas.toJSON();
-      onChange(JSON.stringify(json));
-    }
+    if (!editor) return;
+    editor.commands.deleteSelection();
   };
+
+  if (!editor) {
+    return null;
+  }
 
   return (
     <div className="w-full">
       <Card className="w-full">
         <CardContent className="p-6">
           <EditorToolbar
-            selectedFont={selectedFont}
-            setSelectedFont={setSelectedFont}
-            fontSize={fontSize}
-            setFontSize={setFontSize}
-            textColor={textColor}
-            setTextColor={setTextColor}
+            selectedFont={editor.isActive('textStyle') ? 'Arial' : 'Arial'}
+            setSelectedFont={(font) => editor.commands.setFontFamily(font)}
+            fontSize={editor.isActive('textStyle') ? '16' : '16'}
+            setFontSize={(size) => editor.commands.setFontSize(size)}
+            textColor={editor.isActive('textStyle') ? '#000000' : '#000000'}
+            setTextColor={(color) => editor.commands.setColor(color)}
             onStyleClick={applyTextStyle}
             onAddText={addText}
             onImageUpload={handleImageUpload}
             onDelete={deleteSelected}
           />
 
-          <div className="border border-gray-200 rounded-lg overflow-hidden mt-4">
-            <canvas ref={canvasRef} className="max-w-full" />
+          <div className="border border-gray-200 rounded-lg overflow-hidden mt-4 min-h-[400px] p-4">
+            <EditorContent editor={editor} className="prose max-w-none" />
           </div>
         </CardContent>
       </Card>
