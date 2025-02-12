@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import * as fabric from "fabric";
 import { Card, CardContent } from "@/components/ui/card";
 import { EditorToolbar } from "./editor/EditorToolbar";
+import { useToast } from "@/components/ui/use-toast";
 
 interface EventContentEditorProps {
   initialContent?: string;
@@ -14,10 +15,12 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
   const [selectedFont, setSelectedFont] = useState("Arial");
   const [fontSize, setFontSize] = useState("16");
   const [textColor, setTextColor] = useState("#000000");
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!canvasRef.current) return;
 
+    console.log("Initializing canvas");
     const fabricCanvas = new fabric.Canvas(canvasRef.current, {
       width: 800,
       height: 600,
@@ -27,9 +30,21 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
     });
 
     if (initialContent) {
-      fabricCanvas.loadFromJSON(initialContent, () => {
-        fabricCanvas.renderAll();
-      });
+      console.log("Loading initial content:", initialContent);
+      try {
+        const parsedContent = JSON.parse(initialContent);
+        fabricCanvas.loadFromJSON(parsedContent, () => {
+          console.log("Content loaded successfully");
+          fabricCanvas.renderAll();
+        });
+      } catch (error) {
+        console.error("Error parsing initial content:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load initial content",
+          variant: "destructive",
+        });
+      }
     }
 
     fabricCanvas.on('object:added', (e) => {
@@ -91,7 +106,7 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
     return () => {
       fabricCanvas.dispose();
     };
-  }, []);
+  }, [initialContent]);
 
   const handleFontChange = (newFont: string) => {
     setSelectedFont(newFont);
@@ -100,8 +115,12 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
     if (activeObject && activeObject instanceof fabric.IText) {
       activeObject.set('fontFamily', newFont);
       canvas.renderAll();
-      const json = canvas.toJSON();
-      onChange(JSON.stringify(json));
+      try {
+        const json = canvas.toJSON();
+        onChange(JSON.stringify(json));
+      } catch (error) {
+        console.error("Error converting canvas to JSON:", error);
+      }
     }
   };
 
@@ -112,8 +131,12 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
     if (activeObject && activeObject instanceof fabric.IText) {
       activeObject.set('fontSize', parseInt(newSize));
       canvas.renderAll();
-      const json = canvas.toJSON();
-      onChange(JSON.stringify(json));
+      try {
+        const json = canvas.toJSON();
+        onChange(JSON.stringify(json));
+      } catch (error) {
+        console.error("Error converting canvas to JSON:", error);
+      }
     }
   };
 
@@ -124,8 +147,12 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
     if (activeObject && activeObject instanceof fabric.IText) {
       activeObject.set('fill', newColor);
       canvas.renderAll();
-      const json = canvas.toJSON();
-      onChange(JSON.stringify(json));
+      try {
+        const json = canvas.toJSON();
+        onChange(JSON.stringify(json));
+      } catch (error) {
+        console.error("Error converting canvas to JSON:", error);
+      }
     }
   };
 
@@ -211,8 +238,12 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
     }
 
     canvas.renderAll();
-    const json = canvas.toJSON();
-    onChange(JSON.stringify(json));
+    try {
+      const json = canvas.toJSON();
+      onChange(JSON.stringify(json));
+    } catch (error) {
+      console.error("Error converting canvas to JSON:", error);
+    }
   };
 
   const deleteSelected = () => {
@@ -221,8 +252,12 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
     if (activeObject) {
       canvas.remove(activeObject);
       canvas.requestRenderAll();
-      const json = canvas.toJSON();
-      onChange(JSON.stringify(json));
+      try {
+        const json = canvas.toJSON();
+        onChange(JSON.stringify(json));
+      } catch (error) {
+        console.error("Error converting canvas to JSON:", error);
+      }
     }
   };
 
