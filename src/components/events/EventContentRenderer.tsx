@@ -1,5 +1,5 @@
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Canvas } from 'fabric';
 
 interface EventContentRendererProps {
@@ -8,16 +8,16 @@ interface EventContentRendererProps {
 
 const EventContentRenderer = ({ content }: EventContentRendererProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [htmlContent, setHtmlContent] = useState<string | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!canvasRef.current || !content) return;
+    if (!content) return;
 
     try {
+      // Try to parse as JSON (for Fabric.js canvas content)
       const contentObj = JSON.parse(content);
       
-      // If it's a Fabric.js canvas JSON
-      if (contentObj.version && contentObj.objects) {
+      if (contentObj.version && contentObj.objects && canvasRef.current) {
         const canvas = new Canvas(canvasRef.current);
         canvas.setDimensions({ width: 800, height: 400 });
 
@@ -31,24 +31,20 @@ const EventContentRenderer = ({ content }: EventContentRendererProps) => {
         };
       }
     } catch (e) {
-      console.error('Error parsing content:', e);
-      // If parsing fails, set the HTML content
-      setHtmlContent(content);
+      // If parsing fails, it's HTML content
+      if (contentRef.current) {
+        contentRef.current.innerHTML = content;
+      }
     }
   }, [content]);
 
-  // If we have HTML content, render it directly
-  if (htmlContent) {
-    return <div dangerouslySetInnerHTML={{ __html: htmlContent }} />;
-  }
-
   return (
     <div className="w-full">
-      {content && (
-        <div className="mt-4">
-          <canvas ref={canvasRef} className="w-full rounded-lg shadow-md" />
-        </div>
-      )}
+      <canvas ref={canvasRef} className="w-full rounded-lg shadow-md" />
+      <div 
+        ref={contentRef}
+        className="prose max-w-none"
+      />
     </div>
   );
 };
