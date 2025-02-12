@@ -12,13 +12,14 @@ import {
   Type,
   Heading,
   Heading2,
+  Image as ImageIcon,
 } from "lucide-react";
 import {
   $getSelection,
   $isRangeSelection,
   FORMAT_TEXT_COMMAND,
-  COMMAND_PRIORITY_NORMAL,
-  createCommand,
+  $createParagraphNode,
+  $createTextNode,
 } from "lexical";
 import { $setBlocksType } from "@lexical/selection";
 import { 
@@ -38,6 +39,34 @@ export const EditorToolbar = () => {
         $setBlocksType(selection, () => $createHeadingNode(headingSize));
       }
     });
+  };
+
+  const handleImageUpload = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const url = reader.result;
+          if (typeof url === 'string') {
+            editor.update(() => {
+              const selection = $getSelection();
+              if ($isRangeSelection(selection)) {
+                const imageNode = $createParagraphNode();
+                const textNode = $createTextNode(`![${file.name}](${url})`);
+                imageNode.append(textNode);
+                selection.insertNodes([imageNode]);
+              }
+            });
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
   };
 
   return (
@@ -83,7 +112,7 @@ export const EditorToolbar = () => {
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => formatHeading("h2")} // Changed from paragraph format
+        onClick={() => formatHeading("h2")}
       >
         <Type className="h-4 w-4" />
       </Button>
@@ -113,6 +142,14 @@ export const EditorToolbar = () => {
       </Button>
 
       <div className="w-px h-6 bg-gray-200 mx-2" />
+
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleImageUpload}
+      >
+        <ImageIcon className="h-4 w-4" />
+      </Button>
     </div>
   );
 };
