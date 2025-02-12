@@ -24,7 +24,7 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       height: 600,
       backgroundColor: "#ffffff",
       isDrawingMode: false,
-      selection: true, // Enable object selection
+      selection: true,
     });
 
     if (initialContent) {
@@ -33,7 +33,6 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       });
     }
 
-    // Make objects selectable and movable by default
     fabricCanvas.on('object:added', (e) => {
       if (e.target) {
         e.target.set({
@@ -46,7 +45,6 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       }
     });
 
-    // Add double-click handler for adding text
     fabricCanvas.on('mouse:dblclick', (options) => {
       const pointer = fabricCanvas.getPointer(options.e);
       const text = new fabric.IText('Click to edit text', {
@@ -68,7 +66,6 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       onChange(JSON.stringify(json));
     });
 
-    // Handle text editing events
     fabricCanvas.on('text:changed', (e) => {
       fabricCanvas.requestRenderAll();
       const json = fabricCanvas.toJSON();
@@ -126,13 +123,11 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       if (!event.target?.result) return;
       console.log("Image loaded into FileReader");
       
-      fabric.Image.fromURL(event.target.result.toString(), (img) => {
-        // Scale image to fit within canvas while maintaining aspect ratio
-        const maxSize = 300;
-        const scale = Math.min(maxSize / img.width!, maxSize / img.height!);
-        
-        img.scale(scale);
-        img.set({
+      // Create a fabric.Image instance from the uploaded file
+      const imgElement = new Image();
+      imgElement.src = event.target.result.toString();
+      imgElement.onload = () => {
+        const fabricImage = new fabric.Image(imgElement, {
           left: 50,
           top: 50,
           cornerSize: 10,
@@ -140,13 +135,18 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
           hasBorders: true,
           selectable: true,
         });
-        
-        canvas.add(img);
-        canvas.setActiveObject(img);
+
+        // Scale image to fit within canvas while maintaining aspect ratio
+        const maxSize = 300;
+        const scale = Math.min(maxSize / fabricImage.width!, maxSize / fabricImage.height!);
+        fabricImage.scale(scale);
+
+        canvas.add(fabricImage);
+        canvas.setActiveObject(fabricImage);
         canvas.requestRenderAll();
         const json = canvas.toJSON();
         onChange(JSON.stringify(json));
-      }, { crossOrigin: 'anonymous' });
+      };
     };
     reader.readAsDataURL(e.target.files[0]);
   };
