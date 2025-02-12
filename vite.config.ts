@@ -20,11 +20,6 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    include: ['fabric'],
+    include: ['draft-js', 'react-draft-wysiwyg', 'html-to-draftjs', 'draftjs-to-html'],
   },
-  build: {
-    commonjsOptions: {
-      include: [/fabric/, /node_modules/],
-    },
-  }
 }));

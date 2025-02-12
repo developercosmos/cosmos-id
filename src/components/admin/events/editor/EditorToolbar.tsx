@@ -1,167 +1,55 @@
 
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import {
-  $getSelection,
-  $isRangeSelection,
-  FORMAT_TEXT_COMMAND,
-  $createParagraphNode,
-  $createTextNode,
-  TextFormatType,
-} from "lexical";
-import { $setBlocksType } from "@lexical/selection";
-import { 
-  INSERT_ORDERED_LIST_COMMAND,
-  INSERT_UNORDERED_LIST_COMMAND,
-  REMOVE_LIST_COMMAND,
-} from "@lexical/list";
-import { HeadingTagType, $createHeadingNode } from "@lexical/rich-text";
-import { Button } from "@/components/ui/button";
-import {
-  Bold,
-  Italic,
-  Underline,
-  List,
-  ListOrdered,
-  Link,
-  Type,
-  Heading,
-  Heading2,
-  Image as ImageIcon,
-} from "lucide-react";
+import { TextControls } from "./TextControls";
+import { ImageControls } from "./ImageControls";
+import { Button } from "../../../ui/button";
+import { Type } from "lucide-react";
 
-export const EditorToolbar = () => {
-  const [editor] = useLexicalComposerContext();
+interface EditorToolbarProps {
+  selectedFont: string;
+  setSelectedFont: (font: string) => void;
+  fontSize: string;
+  setFontSize: (size: string) => void;
+  textColor: string;
+  setTextColor: (color: string) => void;
+  onStyleClick: (style: string) => void;
+  onAddText: (e: React.MouseEvent) => void;
+  onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onDelete: () => void;
+}
 
-  const formatHeading = (e: React.MouseEvent, headingSize: HeadingTagType) => {
-    e.preventDefault();
-    editor.update(() => {
-      const selection = $getSelection();
-      if ($isRangeSelection(selection)) {
-        $setBlocksType(selection, () => $createHeadingNode(headingSize));
-      }
-    });
-  };
-
-  const handleFormatClick = (e: React.MouseEvent, format: TextFormatType) => {
-    e.preventDefault();
-    editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
-  };
-
-  const handleListClick = (e: React.MouseEvent, command: any) => {
-    e.preventDefault();
-    editor.dispatchCommand(command, undefined);
-  };
-
-  const handleImageUpload = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = () => {
-      const file = input.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const url = reader.result;
-          if (typeof url === 'string') {
-            editor.update(() => {
-              const selection = $getSelection();
-              if ($isRangeSelection(selection)) {
-                const imageNode = $createParagraphNode();
-                const textNode = $createTextNode(`![${file.name}](${url})`);
-                imageNode.append(textNode);
-                selection.insertNodes([imageNode]);
-              }
-            });
-          }
-        };
-        reader.readAsDataURL(file);
-      }
-    };
-    input.click();
-  };
-
+export const EditorToolbar = ({
+  selectedFont,
+  setSelectedFont,
+  fontSize,
+  setFontSize,
+  textColor,
+  setTextColor,
+  onStyleClick,
+  onAddText,
+  onImageUpload,
+  onDelete,
+}: EditorToolbarProps) => {
   return (
-    <div className="border-b border-gray-200 p-2 flex flex-wrap gap-1 bg-white">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={(e) => handleFormatClick(e, "bold" as TextFormatType)}
-      >
-        <Bold className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={(e) => handleFormatClick(e, "italic" as TextFormatType)}
-      >
-        <Italic className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={(e) => handleFormatClick(e, "underline" as TextFormatType)}
-      >
-        <Underline className="h-4 w-4" />
+    <div className="flex flex-wrap gap-4 mb-4 items-center border-b pb-4">
+      <Button type="button" variant="outline" onClick={onAddText}>
+        <Type className="w-4 h-4 mr-2" />
+        Add Text
       </Button>
 
-      <div className="w-px h-6 bg-gray-200 mx-2" />
+      <TextControls
+        selectedFont={selectedFont}
+        setSelectedFont={setSelectedFont}
+        fontSize={fontSize}
+        setFontSize={setFontSize}
+        textColor={textColor}
+        setTextColor={setTextColor}
+        onStyleClick={onStyleClick}
+      />
 
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={(e) => formatHeading(e, "h1")}
-      >
-        <Heading className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={(e) => formatHeading(e, "h2")}
-      >
-        <Heading2 className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={(e) => formatHeading(e, "h2")}
-      >
-        <Type className="h-4 w-4" />
-      </Button>
-
-      <div className="w-px h-6 bg-gray-200 mx-2" />
-
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={(e) => handleListClick(e, INSERT_UNORDERED_LIST_COMMAND)}
-      >
-        <List className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={(e) => handleListClick(e, INSERT_ORDERED_LIST_COMMAND)}
-      >
-        <ListOrdered className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={(e) => handleListClick(e, REMOVE_LIST_COMMAND)}
-      >
-        <List className="h-4 w-4 line-through" />
-      </Button>
-
-      <div className="w-px h-6 bg-gray-200 mx-2" />
-
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={handleImageUpload}
-      >
-        <ImageIcon className="h-4 w-4" />
-      </Button>
+      <ImageControls
+        onImageUpload={onImageUpload}
+        onDelete={onDelete}
+      />
     </div>
   );
 };
