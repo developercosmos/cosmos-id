@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import * as fabric from "fabric";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,6 +24,7 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       height: 600,
       backgroundColor: "#ffffff",
       isDrawingMode: false,
+      selection: true, // Enable object selection
     });
 
     if (initialContent) {
@@ -30,6 +32,19 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
         fabricCanvas.renderAll();
       });
     }
+
+    // Make objects selectable and movable by default
+    fabricCanvas.on('object:added', (e) => {
+      if (e.target) {
+        e.target.set({
+          selectable: true,
+          hasControls: true,
+          hasBorders: true,
+          lockMovementX: false,
+          lockMovementY: false,
+        });
+      }
+    });
 
     // Add double-click handler for adding text
     fabricCanvas.on('mouse:dblclick', (options) => {
@@ -65,12 +80,14 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       onChange(JSON.stringify(json));
     });
 
-    // Enable text editing on selection
-    fabricCanvas.on('mouse:down', (options) => {
-      if (options.target && options.target instanceof fabric.IText) {
-        options.target.enterEditing();
-        fabricCanvas.requestRenderAll();
-      }
+    fabricCanvas.on("object:moving", () => {
+      const json = fabricCanvas.toJSON();
+      onChange(JSON.stringify(json));
+    });
+
+    fabricCanvas.on("object:scaling", () => {
+      const json = fabricCanvas.toJSON();
+      onChange(JSON.stringify(json));
     });
 
     setCanvas(fabricCanvas);
@@ -109,16 +126,27 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       if (!event.target?.result) return;
       console.log("Image loaded into FileReader");
       
-      fabric.Image.fromURL(event.target.result.toString(), {
-        crossOrigin: 'anonymous'
-      }).then((img) => {
-        console.log("Image created from URL");
-        img.scale(0.5);
+      fabric.Image.fromURL(event.target.result.toString(), (img) => {
+        // Scale image to fit within canvas while maintaining aspect ratio
+        const maxSize = 300;
+        const scale = Math.min(maxSize / img.width!, maxSize / img.height!);
+        
+        img.scale(scale);
+        img.set({
+          left: 50,
+          top: 50,
+          cornerSize: 10,
+          hasControls: true,
+          hasBorders: true,
+          selectable: true,
+        });
+        
         canvas.add(img);
         canvas.setActiveObject(img);
+        canvas.requestRenderAll();
         const json = canvas.toJSON();
         onChange(JSON.stringify(json));
-      });
+      }, { crossOrigin: 'anonymous' });
     };
     reader.readAsDataURL(e.target.files[0]);
   };
@@ -159,6 +187,7 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
     const activeObject = canvas.getActiveObject();
     if (activeObject) {
       canvas.remove(activeObject);
+      canvas.requestRenderAll();
       const json = canvas.toJSON();
       onChange(JSON.stringify(json));
     }
