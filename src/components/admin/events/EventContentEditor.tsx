@@ -1,55 +1,35 @@
 
-import { useEditor, EditorContent, Extension } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import TextAlign from '@tiptap/extension-text-align';
-import Underline from '@tiptap/extension-underline';
-import TextStyle from '@tiptap/extension-text-style';
-import FontFamily from '@tiptap/extension-font-family';
-import { Color } from '@tiptap/extension-color';
-import Image from '@tiptap/extension-image';
 import { useEffect, useState } from "react";
+import { LexicalComposer } from "@lexical/react/LexicalComposer";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { $createParagraphNode, $getRoot } from "lexical";
+import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
+import * as fabric from "fabric";
 import { Card, CardContent } from "@/components/ui/card";
 import { EditorToolbar } from "./editor/EditorToolbar";
 import { useToast } from "@/components/ui/use-toast";
-import * as fabric from "fabric";
-
-// Custom fontSize extension
-const FontSize = Extension.create({
-  name: 'fontSize',
-  addAttributes() {
-    return {
-      size: {
-        default: '16px',
-        parseHTML: element => element.style.fontSize,
-        renderHTML: attributes => {
-          if (!attributes.size) return {}
-          return { style: `font-size: ${attributes.size}` }
-        },
-      },
-    }
-  },
-  addGlobalAttributes() {
-    return [
-      {
-        types: ['textStyle'],
-        attributes: {
-          size: {
-            default: null,
-            parseHTML: element => element.style.fontSize,
-            renderHTML: attributes => {
-              if (!attributes.size) return {}
-              return { style: `font-size: ${attributes.size}` }
-            },
-          },
-        },
-      },
-    ]
-  },
-})
 
 interface EventContentEditorProps {
   initialContent?: string;
   onChange: (content: string) => void;
+}
+
+function EditorController({ onChange }: { onChange: (html: string) => void }) {
+  const [editor] = useLexicalComposerContext();
+
+  useEffect(() => {
+    editor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
+        const htmlString = $generateHtmlFromNodes(editor);
+        onChange(htmlString);
+      });
+    });
+  }, [editor, onChange]);
+
+  return null;
 }
 
 export const EventContentEditor = ({ initialContent, onChange }: EventContentEditorProps) => {
@@ -59,42 +39,25 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
   const { toast } = useToast();
   const [imageCanvas, setImageCanvas] = useState<fabric.Canvas | null>(null);
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-      Underline,
-      TextStyle,
-      FontFamily,
-      Color,
-      FontSize,
-      Image,
-    ],
-    content: initialContent,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+  const initialConfig = {
+    namespace: "EventEditor",
+    theme: {
+      paragraph: "mb-2",
+      text: {
+        bold: "font-bold",
+        italic: "italic",
+        underline: "underline",
+      },
     },
-  });
-
-  useEffect(() => {
-    if (editor) {
-      editor.commands.setFontFamily(selectedFont);
-    }
-  }, [selectedFont, editor]);
-
-  useEffect(() => {
-    if (editor) {
-      editor.chain().focus().updateAttributes('textStyle', { size: fontSize + 'px' }).run();
-    }
-  }, [fontSize, editor]);
-
-  useEffect(() => {
-    if (editor) {
-      editor.commands.setColor(textColor);
-    }
-  }, [textColor, editor]);
+    onError: (error: Error) => {
+      console.error(error);
+      toast({
+        title: "Editor Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
@@ -132,10 +95,14 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
         imageCanvas?.renderAll();
 
         // Insert the canvas into the editor
-        if (editor) {
-          const canvasElement = document.getElementById('image-canvas') as HTMLCanvasElement;
-          if (canvasElement) {
-            editor.chain().focus().setImage({ src: canvasElement.toDataURL() }).run();
+        const canvasElement = document.getElementById('image-canvas') as HTMLCanvasElement;
+        if (canvasElement) {
+          const imgSrc = canvasElement.toDataURL();
+          const imageNode = document.createElement('img');
+          imageNode.src = imgSrc;
+          const selection = window.getSelection();
+          if (selection?.rangeCount) {
+            selection.getRangeAt(0).insertNode(imageNode);
           }
         }
       };
@@ -143,48 +110,31 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
     reader.readAsDataURL(e.target.files[0]);
   };
 
-  const handleFontChange = (newFont: string) => {
-    setSelectedFont(newFont);
-    if (editor) {
-      editor.chain().focus().setFontFamily(newFont).run();
-    }
-  };
-
-  const handleFontSizeChange = (newSize: string) => {
-    setFontSize(newSize);
-    if (editor) {
-      editor.chain().focus().updateAttributes('textStyle', { size: newSize + 'px' }).run();
-    }
-  };
-
-  const handleColorChange = (newColor: string) => {
-    setTextColor(newColor);
-    if (editor) {
-      editor.chain().focus().setColor(newColor).run();
-    }
-  };
-
   const applyTextStyle = (style: string) => {
+    const editor = document.querySelector('[contenteditable="true"]');
     if (!editor) return;
+
+    const selection = window.getSelection();
+    if (!selection?.rangeCount) return;
 
     switch (style) {
       case 'bold':
-        editor.chain().focus().toggleBold().run();
+        document.execCommand('bold', false);
         break;
       case 'italic':
-        editor.chain().focus().toggleItalic().run();
+        document.execCommand('italic', false);
         break;
       case 'underline':
-        editor.chain().focus().toggleUnderline().run();
+        document.execCommand('underline', false);
         break;
       case 'alignLeft':
-        editor.chain().focus().setTextAlign('left').run();
+        document.execCommand('justifyLeft', false);
         break;
       case 'alignCenter':
-        editor.chain().focus().setTextAlign('center').run();
+        document.execCommand('justifyCenter', false);
         break;
       case 'alignRight':
-        editor.chain().focus().setTextAlign('right').run();
+        document.execCommand('justifyRight', false);
         break;
     }
   };
@@ -194,19 +144,34 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       <CardContent className="p-6">
         <EditorToolbar
           selectedFont={selectedFont}
-          setSelectedFont={handleFontChange}
+          setSelectedFont={setSelectedFont}
           fontSize={fontSize}
-          setFontSize={handleFontSizeChange}
+          setFontSize={setFontSize}
           textColor={textColor}
-          setTextColor={handleColorChange}
+          setTextColor={setTextColor}
           onStyleClick={applyTextStyle}
-          onAddText={() => editor?.commands.focus()}
+          onAddText={() => {}}
           onImageUpload={handleImageUpload}
-          onDelete={() => editor?.commands.deleteSelection()}
+          onDelete={() => document.execCommand('delete', false)}
         />
 
         <div className="border border-gray-200 rounded-lg overflow-hidden">
-          <EditorContent editor={editor} className="prose max-w-none p-4" />
+          <LexicalComposer initialConfig={initialConfig}>
+            <div className="relative min-h-[400px] p-4">
+              <RichTextPlugin
+                contentEditable={
+                  <ContentEditable className="min-h-[400px] outline-none" />
+                }
+                placeholder={
+                  <div className="absolute top-4 left-4 text-gray-400">
+                    Start typing...
+                  </div>
+                }
+              />
+              <HistoryPlugin />
+              <EditorController onChange={onChange} />
+            </div>
+          </LexicalComposer>
           <canvas id="image-canvas" style={{ display: 'none' }} />
         </div>
       </CardContent>
