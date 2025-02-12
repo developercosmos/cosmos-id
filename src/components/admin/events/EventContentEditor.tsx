@@ -1,15 +1,8 @@
 
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Image from '@tiptap/extension-image';
-import TextAlign from '@tiptap/extension-text-align';
-import Underline from '@tiptap/extension-underline';
-import Color from '@tiptap/extension-color';
-import TextStyle from '@tiptap/extension-text-style';
-import FontFamily from '@tiptap/extension-font-family';
-import { Card, CardContent } from "../../ui/card";
-import { EditorToolbar } from "./editor/EditorToolbar";
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from "react";
+import * as fabric from "fabric";
+import { Card, CardContent } from "@/components/ui/card";
+import { EditorToolbar } from "./EditorToolbar";
 
 interface EventContentEditorProps {
   initialContent?: string;
@@ -17,122 +10,243 @@ interface EventContentEditorProps {
 }
 
 export const EventContentEditor = ({ initialContent, onChange }: EventContentEditorProps) => {
-  const editor = useEditor({
-    extensions: [
-      StarterKit,
-      Image,
-      Underline,
-      TextStyle,
-      FontFamily,
-      Color,
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-    ],
-    content: initialContent || '',
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
-    },
-  });
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
+  const [selectedFont, setSelectedFont] = useState("Arial");
+  const [fontSize, setFontSize] = useState("16");
+  const [textColor, setTextColor] = useState("#000000");
 
   useEffect(() => {
-    if (editor && initialContent) {
-      editor.commands.setContent(initialContent);
-    }
-  }, [editor, initialContent]);
+    if (!canvasRef.current) return;
 
-  const addText = () => {
-    if (!editor) return;
-    editor.commands.insertContent('<p>New text</p>');
+    const fabricCanvas = new fabric.Canvas(canvasRef.current, {
+      width: 800,
+      height: 600,
+      backgroundColor: "#ffffff",
+      isDrawingMode: false,
+      selection: true,
+    });
+
+    if (initialContent) {
+      fabricCanvas.loadFromJSON(initialContent, () => {
+        fabricCanvas.renderAll();
+      });
+    }
+
+    fabricCanvas.on('object:added', (e) => {
+      if (e.target) {
+        e.target.set({
+          selectable: true,
+          hasControls: true,
+          hasBorders: true,
+          lockMovementX: false,
+          lockMovementY: false,
+        });
+      }
+    });
+
+    fabricCanvas.on('mouse:dblclick', (options) => {
+      const pointer = fabricCanvas.getPointer(options.e);
+      const text = new fabric.IText('Click to edit text', {
+        left: pointer.x,
+        top: pointer.y,
+        fontFamily: selectedFont,
+        fontSize: parseInt(fontSize),
+        fill: textColor,
+        width: 300,
+        editable: true,
+      });
+      
+      fabricCanvas.add(text);
+      fabricCanvas.setActiveObject(text);
+      text.enterEditing();
+      text.selectAll();
+      fabricCanvas.requestRenderAll();
+      const json = fabricCanvas.toJSON();
+      onChange(JSON.stringify(json));
+    });
+
+    fabricCanvas.on('text:changed', (e) => {
+      fabricCanvas.requestRenderAll();
+      const json = fabricCanvas.toJSON();
+      onChange(JSON.stringify(json));
+    });
+
+    fabricCanvas.on("object:modified", () => {
+      const json = fabricCanvas.toJSON();
+      onChange(JSON.stringify(json));
+    });
+
+    fabricCanvas.on("object:moving", () => {
+      const json = fabricCanvas.toJSON();
+      onChange(JSON.stringify(json));
+    });
+
+    fabricCanvas.on("object:scaling", () => {
+      const json = fabricCanvas.toJSON();
+      onChange(JSON.stringify(json));
+    });
+
+    setCanvas(fabricCanvas);
+
+    return () => {
+      fabricCanvas.dispose();
+    };
+  }, []);
+
+  const handleFontChange = (newFont: string) => {
+    setSelectedFont(newFont);
+    if (!canvas) return;
+    const activeObject = canvas.getActiveObject();
+    if (activeObject && activeObject instanceof fabric.IText) {
+      activeObject.set('fontFamily', newFont);
+      canvas.renderAll();
+      const json = canvas.toJSON();
+      onChange(JSON.stringify(json));
+    }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!editor || !e.target.files?.[0]) return;
+  const handleFontSizeChange = (newSize: string) => {
+    setFontSize(newSize);
+    if (!canvas) return;
+    const activeObject = canvas.getActiveObject();
+    if (activeObject && activeObject instanceof fabric.IText) {
+      activeObject.set('fontSize', parseInt(newSize));
+      canvas.renderAll();
+      const json = canvas.toJSON();
+      onChange(JSON.stringify(json));
+    }
+  };
+
+  const handleColorChange = (newColor: string) => {
+    setTextColor(newColor);
+    if (!canvas) return;
+    const activeObject = canvas.getActiveObject();
+    if (activeObject && activeObject instanceof fabric.IText) {
+      activeObject.set('fill', newColor);
+      canvas.renderAll();
+      const json = canvas.toJSON();
+      onChange(JSON.stringify(json));
+    }
+  };
+
+  const addText = () => {
+    if (!canvas) return;
+    const text = new fabric.IText("Click to edit text", {
+      left: 50,
+      top: 50,
+      fontFamily: selectedFont,
+      fontSize: parseInt(fontSize),
+      fill: textColor,
+      width: 300,
+      editable: true,
+    });
+    canvas.add(text);
+    canvas.setActiveObject(text);
+    text.enterEditing();
+    text.selectAll();
+    canvas.requestRenderAll();
+    const json = canvas.toJSON();
+    onChange(JSON.stringify(json));
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!canvas || !e.target.files?.[0]) return;
+    console.log("Uploading image:", e.target.files[0].name);
     
-    const file = e.target.files[0];
     const reader = new FileReader();
-    
     reader.onload = (event) => {
       if (!event.target?.result) return;
-      editor.commands.setImage({ src: event.target.result.toString() });
+      console.log("Image loaded into FileReader");
+      
+      const imgElement = new Image();
+      imgElement.src = event.target.result.toString();
+      imgElement.onload = () => {
+        const fabricImage = new fabric.Image(imgElement, {
+          left: 50,
+          top: 50,
+          cornerSize: 10,
+          hasControls: true,
+          hasBorders: true,
+          selectable: true,
+        });
+
+        const maxSize = 300;
+        const scale = Math.min(maxSize / fabricImage.width!, maxSize / fabricImage.height!);
+        fabricImage.scale(scale);
+
+        canvas.add(fabricImage);
+        canvas.setActiveObject(fabricImage);
+        canvas.requestRenderAll();
+        const json = canvas.toJSON();
+        onChange(JSON.stringify(json));
+      };
     };
-    
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(e.target.files[0]);
   };
 
   const applyTextStyle = (style: string) => {
-    if (!editor) return;
+    if (!canvas) return;
+    const activeObject = canvas.getActiveObject();
+    if (!activeObject || !(activeObject instanceof fabric.IText)) return;
 
     switch (style) {
       case 'bold':
-        editor.commands.toggleBold();
+        activeObject.set('fontWeight', activeObject.fontWeight === 'bold' ? 'normal' : 'bold');
         break;
       case 'italic':
-        editor.commands.toggleItalic();
+        activeObject.set('fontStyle', activeObject.fontStyle === 'italic' ? 'normal' : 'italic');
         break;
       case 'underline':
-        editor.commands.toggleUnderline();
+        activeObject.set('underline', !activeObject.underline);
         break;
       case 'alignLeft':
-        editor.commands.setTextAlign('left');
+        activeObject.set('textAlign', 'left');
         break;
       case 'alignCenter':
-        editor.commands.setTextAlign('center');
+        activeObject.set('textAlign', 'center');
         break;
       case 'alignRight':
-        editor.commands.setTextAlign('right');
-        break;
-      case 'h1':
-        editor.commands.toggleHeading({ level: 1 });
-        break;
-      case 'h2':
-        editor.commands.toggleHeading({ level: 2 });
-        break;
-      case 'quote':
-        editor.commands.toggleBlockquote();
-        break;
-      case 'bulletList':
-        editor.commands.toggleBulletList();
-        break;
-      case 'numberedList':
-        editor.commands.toggleOrderedList();
+        activeObject.set('textAlign', 'right');
         break;
     }
+
+    canvas.renderAll();
+    const json = canvas.toJSON();
+    onChange(JSON.stringify(json));
   };
 
   const deleteSelected = () => {
-    if (!editor) return;
-    editor.commands.deleteSelection();
+    if (!canvas) return;
+    const activeObject = canvas.getActiveObject();
+    if (activeObject) {
+      canvas.remove(activeObject);
+      canvas.requestRenderAll();
+      const json = canvas.toJSON();
+      onChange(JSON.stringify(json));
+    }
   };
 
-  if (!editor) {
-    return null;
-  }
-
   return (
-    <div className="w-full">
-      <Card className="w-full">
-        <CardContent className="p-6">
-          <EditorToolbar
-            selectedFont={editor.isActive('textStyle') ? 'Arial' : 'Arial'}
-            setSelectedFont={(font) => editor.chain().focus().setFontFamily(font).run()}
-            fontSize={editor.isActive('textStyle') ? '16' : '16'}
-            setFontSize={(size) => {
-              editor.chain().focus().setFontSize(size).run();
-            }}
-            textColor={editor.isActive('textStyle') ? '#000000' : '#000000'}
-            setTextColor={(color) => editor.chain().focus().setColor(color).run()}
-            onStyleClick={applyTextStyle}
-            onAddText={addText}
-            onImageUpload={handleImageUpload}
-            onDelete={deleteSelected}
-          />
+    <Card className="w-full">
+      <CardContent className="p-6">
+        <EditorToolbar
+          selectedFont={selectedFont}
+          setSelectedFont={handleFontChange}
+          fontSize={fontSize}
+          setFontSize={handleFontSizeChange}
+          textColor={textColor}
+          setTextColor={handleColorChange}
+          onStyleClick={applyTextStyle}
+          onAddText={addText}
+          onImageUpload={handleImageUpload}
+          onDelete={deleteSelected}
+        />
 
-          <div className="border border-gray-200 rounded-lg overflow-hidden mt-4 min-h-[400px] p-4">
-            <EditorContent editor={editor} className="prose max-w-none" />
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+        <div className="border border-gray-200 rounded-lg overflow-hidden">
+          <canvas ref={canvasRef} className="max-w-full" />
+        </div>
+      </CardContent>
+    </Card>
   );
 };
