@@ -38,7 +38,6 @@ const theme = {
 
 export const EventContentEditor = ({ initialContent, onChange }: EventContentEditorProps) => {
   const { toast } = useToast();
-  const [floatingAnchorElem, setFloatingAnchorElem] = useState<HTMLDivElement | null>(null);
 
   const initialConfig = {
     namespace: 'EventContentEditor',

@@ -17,6 +17,8 @@ import {
   $getSelection,
   $isRangeSelection,
   FORMAT_TEXT_COMMAND,
+  COMMAND_PRIORITY_NORMAL,
+  createCommand,
 } from "lexical";
 import { $setBlocksType } from "@lexical/selection";
 import { 
@@ -81,7 +83,7 @@ export const EditorToolbar = () => {
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "paragraph")}
+        onClick={() => formatHeading("h2")} // Changed from paragraph format
       >
         <Type className="h-4 w-4" />
       </Button>
@@ -111,19 +113,6 @@ export const EditorToolbar = () => {
       </Button>
 
       <div className="w-px h-6 bg-gray-200 mx-2" />
-
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => {
-          const url = window.prompt('Enter URL');
-          if (url) {
-            editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'link');
-          }
-        }}
-      >
-        <Link className="h-4 w-4" />
-      </Button>
     </div>
   );
 };
