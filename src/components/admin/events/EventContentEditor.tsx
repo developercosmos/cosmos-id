@@ -27,8 +27,12 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
 
       const editor = window.AlloyEditor.editable(editorRef.current, {
         allowedContent: true,
-        enterMode: 2, // ENTER_BR
+        enterMode: window.CKEDITOR.ENTER_BR,
         toolbars: {
+          add: {
+            buttons: ['table'],
+            tabIndex: 2
+          },
           styles: {
             selections: [
               {
@@ -122,19 +126,23 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
         event.stop();
       });
 
+      // Save the editor instance
       editorInstanceRef.current = editor;
+
+      // Force a re-render of the editor UI
+      editor.get('nativeEditor').fire('instanceReady');
     };
 
-    // Check if AlloyEditor is loaded
-    const checkAlloyEditor = setInterval(() => {
-      if (window.AlloyEditor) {
-        clearInterval(checkAlloyEditor);
+    // Check if both CKEDITOR and AlloyEditor are loaded
+    const checkDependencies = setInterval(() => {
+      if (window.CKEDITOR && window.AlloyEditor) {
+        clearInterval(checkDependencies);
         initializeEditor();
       }
     }, 100);
 
     return () => {
-      clearInterval(checkAlloyEditor);
+      clearInterval(checkDependencies);
       if (editorInstanceRef.current) {
         editorInstanceRef.current.destroy();
       }
