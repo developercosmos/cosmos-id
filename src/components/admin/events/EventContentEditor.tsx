@@ -117,7 +117,9 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
             selectedFont={editor.isActive('textStyle') ? 'Arial' : 'Arial'}
             setSelectedFont={(font) => editor.chain().focus().setFontFamily(font).run()}
             fontSize={editor.isActive('textStyle') ? '16' : '16'}
-            setFontSize={(size) => editor.chain().focus().setTextStyle({ fontSize: `${size}px` }).run()}
+            setFontSize={(size) => editor.chain().focus().run(({ commands }) => {
+              return commands.setMark('textStyle', { fontSize: `${size}px` });
+            })}
             textColor={editor.isActive('textStyle') ? '#000000' : '#000000'}
             setTextColor={(color) => editor.chain().focus().setColor(color).run()}
             onStyleClick={applyTextStyle}
