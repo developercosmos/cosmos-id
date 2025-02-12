@@ -16,7 +16,6 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
   const [fontSize, setFontSize] = useState("16");
   const [textColor, setTextColor] = useState("#000000");
 
-  // Setup canvas and load initial content
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -24,44 +23,18 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       width: 800,
       height: 600,
       backgroundColor: "#ffffff",
+      isDrawingMode: false,
     });
 
-    setCanvas(fabricCanvas);
-
-    // Set up event listeners
-    const handleModification = () => {
-      const json = fabricCanvas.toJSON();
-      onChange(JSON.stringify(json));
-    };
-
-    fabricCanvas.on('object:modified', handleModification);
-    fabricCanvas.on('text:changed', handleModification);
-
-    // Immediately load initial content if available
     if (initialContent) {
-      try {
-        fabricCanvas.loadFromJSON(initialContent, () => {
-          fabricCanvas.renderAll();
-          console.log("Initial content loaded successfully");
-        });
-      } catch (error) {
-        console.error("Error loading initial content:", error);
-      }
+      fabricCanvas.loadFromJSON(initialContent, () => {
+        fabricCanvas.renderAll();
+      });
     }
 
-    return () => {
-      fabricCanvas.off('object:modified', handleModification);
-      fabricCanvas.off('text:changed', handleModification);
-      fabricCanvas.dispose();
-    };
-  }, [initialContent]); // Added initialContent as dependency
-
-  // Handle double-click for adding text
-  useEffect(() => {
-    if (!canvas) return;
-
-    const handleDblClick = (options: fabric.TPointerEventInfo<fabric.TPointerEvent>) => {
-      const pointer = canvas.getPointer(options.e);
+    // Add double-click handler for adding text
+    fabricCanvas.on('mouse:dblclick', (options) => {
+      const pointer = fabricCanvas.getPointer(options.e);
       const text = new fabric.IText('Click to edit text', {
         left: pointer.x,
         top: pointer.y,
@@ -72,27 +45,44 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
         editable: true,
       });
       
-      canvas.add(text);
-      canvas.setActiveObject(text);
+      fabricCanvas.add(text);
+      fabricCanvas.setActiveObject(text);
       text.enterEditing();
       text.selectAll();
-      canvas.requestRenderAll();
-      const json = canvas.toJSON();
+      fabricCanvas.requestRenderAll();
+      const json = fabricCanvas.toJSON();
       onChange(JSON.stringify(json));
-    };
+    });
 
-    canvas.on('mouse:dblclick', handleDblClick);
+    // Handle text editing events
+    fabricCanvas.on('text:changed', () => {
+      fabricCanvas.requestRenderAll();
+      const json = fabricCanvas.toJSON();
+      onChange(JSON.stringify(json));
+    });
+
+    fabricCanvas.on("object:modified", () => {
+      const json = fabricCanvas.toJSON();
+      onChange(JSON.stringify(json));
+    });
+
+    // Enable text editing on selection
+    fabricCanvas.on('mouse:down', (options) => {
+      if (options.target && options.target instanceof fabric.IText) {
+        options.target.enterEditing();
+        fabricCanvas.requestRenderAll();
+      }
+    });
+
+    setCanvas(fabricCanvas);
 
     return () => {
-      canvas.off('mouse:dblclick', handleDblClick);
+      fabricCanvas.dispose();
     };
-  }, [canvas, selectedFont, fontSize, textColor]);
+  }, [initialContent, selectedFont, fontSize, textColor]);
 
-  const addText = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const addText = () => {
     if (!canvas) return;
-    
     const text = new fabric.IText("Click to edit text", {
       left: 50,
       top: 50,
@@ -102,7 +92,6 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       width: 300,
       editable: true,
     });
-    
     canvas.add(text);
     canvas.setActiveObject(text);
     text.enterEditing();
@@ -113,8 +102,6 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
     if (!canvas || !e.target.files?.[0]) return;
     
     const reader = new FileReader();
@@ -158,25 +145,6 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       case 'alignRight':
         activeObject.set('textAlign', 'right');
         break;
-      case 'h1':
-        activeObject.set('fontSize', 32);
-        break;
-      case 'h2':
-        activeObject.set('fontSize', 24);
-        break;
-      case 'quote':
-        activeObject.set({
-          fontStyle: 'italic',
-          textAlign: 'center',
-          padding: 20
-        });
-        break;
-      case 'bulletList':
-        activeObject.set('text', '• ' + activeObject.text);
-        break;
-      case 'numberedList':
-        activeObject.set('text', '1. ' + activeObject.text);
-        break;
     }
 
     canvas.renderAll();
@@ -195,7 +163,7 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="w-full">
+    <div className="w-full">
       <Card className="w-full">
         <CardContent className="p-6">
           <EditorToolbar
@@ -216,6 +184,6 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
           </div>
         </CardContent>
       </Card>
-    </form>
+    </div>
   );
 };
