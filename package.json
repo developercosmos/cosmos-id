@@ -59,6 +59,7 @@
     "@types/draftjs-to-html": "^0.8.4",
     "@types/fabric": "^5.3.9",
     "@types/react-draft-wysiwyg": "^1.13.8",
+    "alloyeditor": "^2.14.10",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",

@@ -1,10 +1,7 @@
 
-import { useState, useEffect } from "react";
-import { EditorState, convertToRaw, ContentState } from "draft-js";
-import { Editor } from "react-draft-wysiwyg";
-import htmlToDraft from "html-to-draftjs";
-import draftToHtml from "draftjs-to-html";
-import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
+import { useEffect, useRef } from "react";
+import AlloyEditor from 'alloyeditor';
+import 'alloyeditor/dist/alloy-editor/assets/alloy-editor-ocean.css';
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -14,98 +11,132 @@ interface EventContentEditorProps {
 }
 
 export const EventContentEditor = ({ initialContent, onChange }: EventContentEditorProps) => {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const editorInstanceRef = useRef<any>(null);
   const { toast } = useToast();
-  const [editorState, setEditorState] = useState(() => {
-    if (initialContent) {
-      const contentBlock = htmlToDraft(initialContent);
-      const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
-      return EditorState.createWithContent(contentState);
-    }
-    return EditorState.createEmpty();
-  });
 
   useEffect(() => {
-    const currentContent = editorState.getCurrentContent();
-    const htmlContent = draftToHtml(convertToRaw(currentContent));
-    onChange(htmlContent);
-  }, [editorState, onChange]);
+    if (!editorRef.current) return;
 
-  const handleEditorStateChange = (newEditorState: EditorState) => {
-    setEditorState(newEditorState);
-  };
+    // Initialize AlloyEditor
+    const editor = AlloyEditor.editable(editorRef.current, {
+      allowedContent: true,
+      enterMode: 2, // ENTER_BR
+      toolbars: {
+        styles: {
+          selections: [
+            {
+              name: 'text',
+              buttons: [
+                'bold',
+                'italic',
+                'underline',
+                'link',
+                'paragraphLeft',
+                'paragraphCenter',
+                'paragraphRight',
+                'h1',
+                'h2',
+                'ul',
+                'ol',
+                'quote',
+                'image',
+                'table'
+              ],
+              test: AlloyEditor.SelectionTest.text
+            },
+            {
+              name: 'table',
+              buttons: ['tableRow', 'tableColumn', 'tableCell', 'tableHeading'],
+              test: AlloyEditor.SelectionTest.table
+            }
+          ],
+          tabIndex: 1
+        }
+      },
+      extraPlugins: [
+        'ae_autolink',
+        'ae_dragresize',
+        'ae_imagealignment',
+        'ae_placeholder',
+        'ae_selectionregion',
+        'ae_uicore',
+        'ae_tableresize',
+        'table',
+        'tabletools'
+      ],
+      removePlugins: 'contextmenu,elementspath,resize',
+      height: '400px',
+      placeholder: 'Start writing your content...'
+    });
 
-  const uploadCallback = (file: File): Promise<{ data: { link: string } }> => {
-    return new Promise((resolve, reject) => {
+    // Set initial content if provided
+    if (initialContent) {
+      editor.get('nativeEditor').setData(initialContent);
+    }
+
+    // Handle content changes
+    editor.get('nativeEditor').on('change', () => {
+      const content = editor.get('nativeEditor').getData();
+      onChange(content);
+    });
+
+    // Handle image uploads
+    editor.get('nativeEditor').on('fileUploadRequest', (event: any) => {
+      const fileLoader = event.data.fileLoader;
+      const file = fileLoader.file;
       const reader = new FileReader();
-      reader.onload = (e) => {
-        resolve({ data: { link: e.target?.result as string } });
+
+      reader.onload = function(e) {
+        if (e.target?.result) {
+          fileLoader.uploadUrl = e.target.result as string;
+          event.stop();
+          fileLoader.uploaded = true;
+          fileLoader.xhr = {
+            status: 200,
+            responseText: JSON.stringify({
+              uploaded: 1,
+              url: e.target.result
+            })
+          };
+          fileLoader.fire('uploaded');
+          toast({
+            title: "Success",
+            description: "Image uploaded successfully",
+          });
+        }
       };
-      reader.onerror = (error) => {
+
+      reader.onerror = () => {
         toast({
-          title: "Upload Error",
+          title: "Error",
           description: "Failed to upload image",
           variant: "destructive",
         });
-        reject(error);
       };
+
       reader.readAsDataURL(file);
+      event.stop();
     });
-  };
 
-  const editorStyle = {
-    padding: '1rem',
-    minHeight: '400px',
-    backgroundColor: 'white',
-  };
+    editorInstanceRef.current = editor;
 
-  const toolbarStyle = {
-    backgroundColor: 'white',
-    borderBottom: '1px solid #e5e7eb',
-    marginBottom: '0.5rem',
-  };
+    // Cleanup
+    return () => {
+      if (editorInstanceRef.current) {
+        editorInstanceRef.current.destroy();
+      }
+    };
+  }, []);
 
   return (
     <Card className="w-full">
       <CardContent className="p-6">
         <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-          <Editor
-            editorState={editorState}
-            onEditorStateChange={handleEditorStateChange}
-            wrapperClassName="rounded-lg border border-gray-200"
-            editorClassName="px-4 py-2 min-h-[400px] focus:outline-none"
-            toolbarClassName="border-b border-gray-200"
-            editorStyle={editorStyle}
-            toolbarStyle={toolbarStyle}
-            toolbar={{
-              options: [
-                'inline', 
-                'blockType', 
-                'fontSize', 
-                'fontFamily',
-                'list', 
-                'textAlign', 
-                'colorPicker', 
-                'link', 
-                'embedded', 
-                'emoji', 
-                'image', 
-                'remove', 
-                'history'
-              ],
-              inline: {
-                options: ['bold', 'italic', 'underline', 'strikethrough', 'monospace'],
-              },
-              image: {
-                uploadCallback,
-                previewImage: true,
-                inputAccept: 'image/gif,image/jpeg,image/jpg,image/png,image/svg',
-                alt: { present: true, mandatory: false },
-                defaultSize: {
-                  height: '300px',
-                  width: 'auto',
-                },
-              },
-            }}
+          <div
+            ref={editorRef}
+            className="min-h-[400px] p-4"
+            contentEditable={true}
           />
         </div>
       </CardContent>
