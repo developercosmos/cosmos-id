@@ -16,6 +16,7 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
   const [fontSize, setFontSize] = useState("16");
   const [textColor, setTextColor] = useState("#000000");
 
+  // Setup canvas and load initial content
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -25,20 +26,18 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       backgroundColor: "#ffffff",
     });
 
-    // Set up event listeners
-    fabricCanvas.on('object:modified', () => {
-      const json = fabricCanvas.toJSON();
-      onChange(JSON.stringify(json));
-    });
-
-    fabricCanvas.on('text:changed', () => {
-      const json = fabricCanvas.toJSON();
-      onChange(JSON.stringify(json));
-    });
-
     setCanvas(fabricCanvas);
 
-    // Load initial content if available
+    // Set up event listeners
+    const handleModification = () => {
+      const json = fabricCanvas.toJSON();
+      onChange(JSON.stringify(json));
+    };
+
+    fabricCanvas.on('object:modified', handleModification);
+    fabricCanvas.on('text:changed', handleModification);
+
+    // Immediately load initial content if available
     if (initialContent) {
       try {
         fabricCanvas.loadFromJSON(initialContent, () => {
@@ -51,11 +50,13 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
     }
 
     return () => {
+      fabricCanvas.off('object:modified', handleModification);
+      fabricCanvas.off('text:changed', handleModification);
       fabricCanvas.dispose();
     };
-  }, []);
+  }, [initialContent]); // Added initialContent as dependency
 
-  // Add double-click handler for adding text
+  // Handle double-click for adding text
   useEffect(() => {
     if (!canvas) return;
 
@@ -88,7 +89,8 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
   }, [canvas, selectedFont, fontSize, textColor]);
 
   const addText = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent form submission
+    e.preventDefault();
+    e.stopPropagation();
     if (!canvas) return;
     
     const text = new fabric.IText("Click to edit text", {
@@ -111,18 +113,17 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (!canvas || !e.target.files?.[0]) return;
-    console.log("Uploading image:", e.target.files[0].name);
     
     const reader = new FileReader();
     reader.onload = (event) => {
       if (!event.target?.result) return;
-      console.log("Image loaded into FileReader");
       
       fabric.Image.fromURL(event.target.result.toString(), {
         crossOrigin: 'anonymous'
       }).then((img) => {
-        console.log("Image created from URL");
         img.scale(0.5);
         canvas.add(img);
         canvas.setActiveObject(img);
@@ -194,25 +195,27 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
   };
 
   return (
-    <Card className="w-full">
-      <CardContent className="p-6">
-        <EditorToolbar
-          selectedFont={selectedFont}
-          setSelectedFont={setSelectedFont}
-          fontSize={fontSize}
-          setFontSize={setFontSize}
-          textColor={textColor}
-          setTextColor={setTextColor}
-          onStyleClick={applyTextStyle}
-          onAddText={addText}
-          onImageUpload={handleImageUpload}
-          onDelete={deleteSelected}
-        />
+    <form onSubmit={(e) => e.preventDefault()} className="w-full">
+      <Card className="w-full">
+        <CardContent className="p-6">
+          <EditorToolbar
+            selectedFont={selectedFont}
+            setSelectedFont={setSelectedFont}
+            fontSize={fontSize}
+            setFontSize={setFontSize}
+            textColor={textColor}
+            setTextColor={setTextColor}
+            onStyleClick={applyTextStyle}
+            onAddText={addText}
+            onImageUpload={handleImageUpload}
+            onDelete={deleteSelected}
+          />
 
-        <div className="border border-gray-200 rounded-lg overflow-hidden mt-4">
-          <canvas ref={canvasRef} className="max-w-full" />
-        </div>
-      </CardContent>
-    </Card>
+          <div className="border border-gray-200 rounded-lg overflow-hidden mt-4">
+            <canvas ref={canvasRef} className="max-w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    </form>
   );
 };
