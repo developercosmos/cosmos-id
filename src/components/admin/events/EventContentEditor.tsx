@@ -1,16 +1,51 @@
 
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, Extension } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
 import TextStyle from '@tiptap/extension-text-style';
 import FontFamily from '@tiptap/extension-font-family';
 import { Color } from '@tiptap/extension-color';
+import Image from '@tiptap/extension-image';
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { EditorToolbar } from "./editor/EditorToolbar";
 import { useToast } from "@/components/ui/use-toast";
 import * as fabric from "fabric";
+
+// Custom fontSize extension
+const FontSize = Extension.create({
+  name: 'fontSize',
+  addAttributes() {
+    return {
+      size: {
+        default: '16px',
+        parseHTML: element => element.style.fontSize,
+        renderHTML: attributes => {
+          if (!attributes.size) return {}
+          return { style: `font-size: ${attributes.size}` }
+        },
+      },
+    }
+  },
+  addGlobalAttributes() {
+    return [
+      {
+        types: ['textStyle'],
+        attributes: {
+          size: {
+            default: null,
+            parseHTML: element => element.style.fontSize,
+            renderHTML: attributes => {
+              if (!attributes.size) return {}
+              return { style: `font-size: ${attributes.size}` }
+            },
+          },
+        },
+      },
+    ]
+  },
+})
 
 interface EventContentEditorProps {
   initialContent?: string;
@@ -34,6 +69,8 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       TextStyle,
       FontFamily,
       Color,
+      FontSize,
+      Image,
     ],
     content: initialContent,
     onUpdate: ({ editor }) => {
@@ -49,7 +86,7 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
 
   useEffect(() => {
     if (editor) {
-      editor.commands.setFontSize(fontSize + 'px');
+      editor.chain().focus().updateAttributes('textStyle', { size: fontSize + 'px' }).run();
     }
   }, [fontSize, editor]);
 
@@ -96,9 +133,9 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
 
         // Insert the canvas into the editor
         if (editor) {
-          const canvasElement = document.getElementById('image-canvas');
+          const canvasElement = document.getElementById('image-canvas') as HTMLCanvasElement;
           if (canvasElement) {
-            editor.commands.setImage({ src: canvasElement.toDataURL() });
+            editor.chain().focus().setImage({ src: canvasElement.toDataURL() }).run();
           }
         }
       };
@@ -116,7 +153,7 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
   const handleFontSizeChange = (newSize: string) => {
     setFontSize(newSize);
     if (editor) {
-      editor.chain().focus().setFontSize(newSize + 'px').run();
+      editor.chain().focus().updateAttributes('textStyle', { size: newSize + 'px' }).run();
     }
   };
 
