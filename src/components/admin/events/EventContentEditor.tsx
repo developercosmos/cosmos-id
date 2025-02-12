@@ -22,7 +22,7 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
       StarterKit,
       Image,
       Underline,
-      TextStyle.configure({ types: ['textStyle'] }),
+      TextStyle,
       FontFamily,
       Color,
       TextAlign.configure({
@@ -118,7 +118,7 @@ export const EventContentEditor = ({ initialContent, onChange }: EventContentEdi
             setSelectedFont={(font) => editor.chain().focus().setFontFamily(font).run()}
             fontSize={editor.isActive('textStyle') ? '16' : '16'}
             setFontSize={(size) => {
-              editor.chain().focus().updateAttributes('textStyle', { fontSize: size }).run();
+              editor.chain().focus().setFontSize(size).run();
             }}
             textColor={editor.isActive('textStyle') ? '#000000' : '#000000'}
             setTextColor={(color) => editor.chain().focus().setColor(color).run()}
