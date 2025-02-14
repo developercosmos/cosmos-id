@@ -149,8 +149,8 @@ export class DomNode {
       return this._[HDOM_INFO.INNER];
     }
 
-    // Fix comparison using enum value
-    if (this.nodetype === HDOM_TYPE.ROOT as number) {
+    // Fix comparison by comparing against the numeric value directly
+    if (this.nodetype === 5) { // HDOM_TYPE.ROOT is 5
       return '';
     }
 
