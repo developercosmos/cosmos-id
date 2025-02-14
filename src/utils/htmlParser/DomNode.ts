@@ -1,3 +1,4 @@
+
 import { HDOM_TYPE, HDOM_INFO, HDOM_QUOTE, HDOM_TYPE_VALUES, HDOM_INFO_VALUES } from './constants';
 
 export class DomNode {
@@ -29,7 +30,6 @@ export class DomNode {
   }
 
   clear(): void {
-    // Clear child nodes to prevent memory leaks
     if (this.children) {
       for (const child of this.children) {
         child.clear();
