@@ -1,7 +1,7 @@
-import { HDOM_TYPE, HDOM_INFO, HDOM_QUOTE } from './constants';
+import { HDOM_TYPE, HDOM_INFO, HDOM_QUOTE, HdomType } from './constants';
 
 export class DomNode {
-  nodetype: number;
+  nodetype: HdomType;
   tag: string;
   attr: Record<string, string | boolean>;
   children: DomNode[];
