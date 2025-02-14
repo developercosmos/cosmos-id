@@ -1,4 +1,4 @@
-import { HDOM_TYPE, HDOM_INFO, HDOM_QUOTE } from './constants';
+import { HDOM_TYPE, HDOM_INFO, HDOM_QUOTE, HDOM_TYPE_VALUES, HDOM_INFO_VALUES } from './constants';
 
 export class DomNode {
   nodetype: HDOM_TYPE;
@@ -13,7 +13,7 @@ export class DomNode {
   private root?: DomNode;
 
   constructor(dom: any) {
-    this.nodetype = HDOM_TYPE.TEXT;
+    this.nodetype = HDOM_TYPE_VALUES.TEXT;
     this.tag = 'text';
     this.attr = {};
     this.children = [];
@@ -92,12 +92,12 @@ export class DomNode {
   }
 
   innerText(): string {
-    if (this._[HDOM_INFO.INNER] !== undefined) {
-      return this._[HDOM_INFO.INNER];
+    if (this._[HDOM_INFO_VALUES.INNER] !== undefined) {
+      return this._[HDOM_INFO_VALUES.INNER];
     }
 
-    if (this._[HDOM_INFO.TEXT] !== undefined) {
-      return this.dom.restoreNoise(this._[HDOM_INFO.TEXT]);
+    if (this._[HDOM_INFO_VALUES.TEXT] !== undefined) {
+      return this.dom.restoreNoise(this._[HDOM_INFO_VALUES.TEXT]);
     }
 
     let ret = '';
@@ -113,23 +113,23 @@ export class DomNode {
       return this.innerText();
     }
 
-    if (this._[HDOM_INFO.OUTER] !== undefined) {
-      return this._[HDOM_INFO.OUTER];
+    if (this._[HDOM_INFO_VALUES.OUTER] !== undefined) {
+      return this._[HDOM_INFO_VALUES.OUTER];
     }
 
-    if (this._[HDOM_INFO.TEXT] !== undefined) {
-      return this.dom.restoreNoise(this._[HDOM_INFO.TEXT]);
+    if (this._[HDOM_INFO_VALUES.TEXT] !== undefined) {
+      return this.dom.restoreNoise(this._[HDOM_INFO_VALUES.TEXT]);
     }
 
     let ret = '';
 
-    if (this.dom && this.dom.nodes[this._[HDOM_INFO.BEGIN]]) {
-      ret = this.dom.nodes[this._[HDOM_INFO.BEGIN]].makeup();
+    if (this.dom && this.dom.nodes[this._[HDOM_INFO_VALUES.BEGIN]]) {
+      ret = this.dom.nodes[this._[HDOM_INFO_VALUES.BEGIN]].makeup();
     }
 
-    if (this._[HDOM_INFO.INNER] !== undefined) {
+    if (this._[HDOM_INFO_VALUES.INNER] !== undefined) {
       if (this.tag !== 'br') {
-        ret += this._[HDOM_INFO.INNER];
+        ret += this._[HDOM_INFO_VALUES.INNER];
       }
     } else if (this.nodes) {
       this.nodes.forEach(n => {
@@ -137,7 +137,7 @@ export class DomNode {
       });
     }
 
-    if (this._[HDOM_INFO.END] && this._[HDOM_INFO.END] !== 0) {
+    if (this._[HDOM_INFO_VALUES.END] && this._[HDOM_INFO_VALUES.END] !== 0) {
       ret += '</' + this.tag + '>';
     }
 
@@ -145,18 +145,19 @@ export class DomNode {
   }
 
   text(): string {
-    if (typeof this._[HDOM_INFO.INNER] !== 'undefined') {
-      return this._[HDOM_INFO.INNER];
+    const innerValue = this._[HDOM_INFO_VALUES.INNER];
+    if (innerValue !== undefined) {
+      return innerValue;
     }
 
-    if (this.nodetype === HDOM_TYPE.ROOT) {
+    if (this.nodetype === HDOM_TYPE_VALUES.ROOT) {
       return '';
     }
 
     switch (this.nodetype) {
-      case HDOM_TYPE.TEXT: return this.dom.restoreNoise(this._[HDOM_INFO.TEXT]);
-      case HDOM_TYPE.COMMENT: return '';
-      case HDOM_TYPE.UNKNOWN: return '';
+      case HDOM_TYPE_VALUES.TEXT: return this.dom.restoreNoise(this._[HDOM_INFO_VALUES.TEXT]);
+      case HDOM_TYPE_VALUES.COMMENT: return '';
+      case HDOM_TYPE_VALUES.UNKNOWN: return '';
     }
 
     if (this.tag.toLowerCase() === 'script') return '';
@@ -182,8 +183,8 @@ export class DomNode {
   }
 
   makeup(): string {
-    if (this._[HDOM_INFO.TEXT] !== undefined) {
-      return this.dom.restoreNoise(this._[HDOM_INFO.TEXT]);
+    if (this._[HDOM_INFO_VALUES.TEXT] !== undefined) {
+      return this.dom.restoreNoise(this._[HDOM_INFO_VALUES.TEXT]);
     }
 
     let ret = '<' + this.tag;
@@ -229,9 +230,9 @@ export class DomNode {
     // find each selector
     for (const selectorGroup of selectors) {
       const level = selectorGroup.length;
-      if (level === 0 || typeof this._[HDOM_INFO.BEGIN] === 'undefined') return [];
+      if (level === 0 || typeof this._[HDOM_INFO_VALUES.BEGIN] === 'undefined') return [];
 
-      let head: Record<string, number> = { [this._[HDOM_INFO.BEGIN].toString()]: 1 };
+      let head: Record<string, number> = { [this._[HDOM_INFO_VALUES.BEGIN].toString()]: 1 };
       let cmd = ' '; // Combinator
 
       // handle descendant selectors, no recursive!
@@ -273,19 +274,19 @@ export class DomNode {
     let nodes: DomNode[] = [];
 
     if (parentCmd === ' ') { // Descendant Combinator
-      let end = this._[HDOM_INFO.END] || 0;
+      let end = this._[HDOM_INFO_VALUES.END] || 0;
       if (end === 0) {
         let parent = this.parent;
-        while (parent && !parent._[HDOM_INFO.END]) {
+        while (parent && !parent._[HDOM_INFO_VALUES.END]) {
           end--;
           parent = parent.parent;
         }
         if (parent) {
-          end += parent._[HDOM_INFO.END];
+          end += parent._[HDOM_INFO_VALUES.END];
         }
       }
 
-      const nodesStart = this._[HDOM_INFO.BEGIN] + 1;
+      const nodesStart = this._[HDOM_INFO_VALUES.BEGIN] + 1;
       const nodesCount = end - nodesStart;
       nodes = this.dom.nodes.slice(nodesStart, nodesStart + nodesCount);
     } else if (parentCmd === '>') { // Child Combinator
@@ -360,8 +361,8 @@ export class DomNode {
       }
 
       // Found a match
-      if (pass && node._[HDOM_INFO.BEGIN]) {
-        ret[node._[HDOM_INFO.BEGIN]] = 1;
+      if (pass && node._[HDOM_INFO_VALUES.BEGIN]) {
+        ret[node._[HDOM_INFO_VALUES.BEGIN]] = 1;
       }
     }
   }
