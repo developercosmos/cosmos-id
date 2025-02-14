@@ -1,6 +1,6 @@
 
 // This file manages server configuration for the frontend
-export const SERVER_URL = "https://api.cosmos.id";
+export const SERVER_URL = "";
 
 // Function to fetch configurations from the server
 export const fetchConfigurations = async () => {
