@@ -46,7 +46,12 @@ export const WarrantyForm = ({ initialData, onSubmit, provinces }: WarrantyFormP
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
         },
+        credentials: 'include',
         body: JSON.stringify({
           d: [{
             prov: province,
@@ -75,7 +80,12 @@ export const WarrantyForm = ({ initialData, onSubmit, provinces }: WarrantyFormP
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
         },
+        credentials: 'include',
         body: JSON.stringify({
           d: [{
             postal: postalCode,

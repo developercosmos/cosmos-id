@@ -42,7 +42,12 @@ const Warranty = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
         },
+        credentials: 'include',
         body: JSON.stringify({
           d: [{}],
           i: "11E044EE-33E7-11EB-9D97-0AB723CF68D0"
@@ -66,7 +71,12 @@ const Warranty = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
         },
+        credentials: 'include',
         body: JSON.stringify({
           d: [{}],
           i: "1350239D-327D-11EB-B811-0206859B6046"
