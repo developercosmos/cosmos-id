@@ -5,7 +5,7 @@
 export const SERVER_URL = "";
 
 // Base URL for the API server
-export const API_URL = "http://api.cosmos.id"; // Change this to match your API server URL
+export const API_URL = "https://api.cosmos.id"; // Change this to match your API server URL
 
 // Function to fetch configurations from the server
 export const fetchConfigurations = async () => {
