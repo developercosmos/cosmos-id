@@ -149,6 +149,11 @@ export class DomNode {
       return this._[HDOM_INFO.INNER];
     }
 
+    // Fix #1: Use proper type checking for nodetype comparison
+    if (this.nodetype === HDOM_TYPE.ROOT) {
+      return '';
+    }
+
     switch (this.nodetype) {
       case HDOM_TYPE.TEXT: return this.dom.restoreNoise(this._[HDOM_INFO.TEXT]);
       case HDOM_TYPE.COMMENT: return '';
@@ -338,11 +343,11 @@ export class DomNode {
 
       // Check if all class(es) exist
       if (pass && cssClass && cssClass.length > 0) {
-        const attrClass = this.attr['class'];
-        if (typeof attrClass === 'string') {
+        const classAttr = node.attr['class'];
+        if (typeof classAttr === 'string') {
           const nodeClasses = lowercase 
-            ? attrClass.toLowerCase().split(' ')
-            : attrClass.split(' ');
+            ? classAttr.toLowerCase().split(' ')
+            : classAttr.split(' ');
 
           for (const c of cssClass) {
             if (!nodeClasses.includes(c)) {
@@ -595,10 +600,19 @@ export class DomNode {
 
   getElementsByTagName(name: string, idx: number | null = null): DomNode[] | DomNode | null {
     const result = this.find(name, idx);
+    
     if (idx === null) {
-      return Array.isArray(result) ? result : [];
+      if (Array.isArray(result)) {
+        return result;
+      }
+      return [];
     }
-    return result instanceof DomNode ? result : null;
+    
+    if (result instanceof DomNode) {
+      return result;
+    }
+    
+    return null;
   }
 
   parentNode(): DomNode | null {
