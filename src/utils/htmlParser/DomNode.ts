@@ -149,8 +149,8 @@ export class DomNode {
       return this._[HDOM_INFO.INNER];
     }
 
-    // Fix #1: Use proper type checking for nodetype comparison
-    if (this.nodetype === HDOM_TYPE.ROOT) {
+    // Fix comparison using enum value
+    if (this.nodetype === HDOM_TYPE.ROOT as number) {
       return '';
     }
 
@@ -337,7 +337,7 @@ export class DomNode {
 
       // Check if ID matches
       if (pass && id !== '' && node.attr['id']) {
-        const nodeId = node.attr['id'].split(' ')[0];
+        const nodeId = typeof node.attr['id'] === 'string' ? node.attr['id'].split(' ')[0] : '';
         if (id !== nodeId) pass = false;
       }
 
