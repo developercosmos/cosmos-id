@@ -1,4 +1,3 @@
-
 import { HDOM_TYPE, HDOM_INFO, HDOM_QUOTE, HDOM_TYPE_VALUES, HDOM_INFO_VALUES } from './constants';
 
 export class DomNode {
@@ -196,29 +195,29 @@ export class DomNode {
       // skip removed attribute
       if (val === null || val === false) continue;
 
-      ret += this._[HDOM_INFO.SPACE]?.[i]?.[0] || '';
+      ret += this._[HDOM_INFO_VALUES.SPACE]?.[i]?.[0] || '';
 
       // no value attr: nowrap, checked selected...
       if (val === true) {
         ret += key;
       } else {
         let quote = '';
-        switch (this._[HDOM_INFO.QUOTE]?.[i]) {
+        switch (this._[HDOM_INFO_VALUES.QUOTE]?.[i]) {
           case HDOM_QUOTE.DOUBLE: quote = '"'; break;
           case HDOM_QUOTE.SINGLE: quote = '\''; break;
           default: quote = '';
         }
 
         ret += key +
-          (this._[HDOM_INFO.SPACE]?.[i]?.[1] || '') +
+          (this._[HDOM_INFO_VALUES.SPACE]?.[i]?.[1] || '') +
           '=' +
-          (this._[HDOM_INFO.SPACE]?.[i]?.[2] || '') +
+          (this._[HDOM_INFO_VALUES.SPACE]?.[i]?.[2] || '') +
           quote + val + quote;
       }
     }
 
     ret = this.dom.restoreNoise(ret);
-    return ret + (this._[HDOM_INFO.ENDSPACE] || '') + '>';
+    return ret + (this._[HDOM_INFO_VALUES.ENDSPACE] || '') + '>';
   }
 
   find(selector: string, idx: number | null = null, lowercase = false): DomNode[] | DomNode | null {
