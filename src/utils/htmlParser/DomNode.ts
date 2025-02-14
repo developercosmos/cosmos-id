@@ -3,7 +3,7 @@ import { HDOM_TYPE, HDOM_INFO, HDOM_QUOTE } from './constants';
 export class DomNode {
   nodetype: number;
   tag: string;
-  attr: Record<string, string>;
+  attr: Record<string, string | boolean>;
   children: DomNode[];
   nodes: DomNode[];
   parent: DomNode | null;
@@ -161,7 +161,6 @@ export class DomNode {
   }
 
   makeup(): string {
-    // text, comment, unknown
     if (this._[HDOM_INFO.TEXT] !== undefined) {
       return this.dom.restoreNoise(this._[HDOM_INFO.TEXT]);
     }
@@ -365,13 +364,136 @@ export class DomNode {
     }
   }
 
-  private parseSelector(selector: string): Array<[string, string, string[], any[], string]> {
-    // This is a simplified version - you would need to implement a proper CSS selector parser here
-    // For now, we'll just handle simple selectors
-    return [[selector, '', [], [], ' ']];
+  private parseSelector(selectorString: string): Array<[string, string, string[], any[], string]> {
+    const selectors: Array<[string, string, string[], any[], string]> = [];
+    const pattern = /([\w:\*-]*)(?:\#([\w-]+))?(?:|\.([\w\.-]+))?((?:\[@?(?:!?[\w:-]+)(?:(?:[!*^$|~]?=)[\"']?(?:.*?)[\"']?)?(?:\s*?(?:[iIsS])?)?\])+)?([\/, >+~]+)/i;
+    
+    const matches = Array.from(selectorString.trim().matchAll(new RegExp(pattern, 'g')));
+    
+    let result: [string, string, string[], any[], string][] = [];
+    
+    for (const match of matches) {
+      const [fullMatch, tag, id, classes, attrs, separator] = match;
+      
+      if (!fullMatch.trim() || fullMatch === '/' || fullMatch === '//') continue;
+      
+      const processedClasses = classes ? classes.split('.').filter(Boolean) : [];
+      
+      const attributes = attrs ? this.parseAttributes(attrs) : [];
+      
+      result.push([
+        tag || '',
+        id || '',
+        processedClasses,
+        attributes,
+        separator ? separator.trim() || ' ' : ' '
+      ]);
+      
+      if (separator === ',') {
+        selectors.push(...result);
+        result = [];
+      }
+    }
+    
+    if (result.length > 0) {
+      selectors.push(...result);
+    }
+    
+    return selectors;
   }
 
-  private convertText(text: string): string {
-    return text;
+  private parseAttributes(attrString: string): any[] {
+    const pattern = /\[@?(!?[\w:-]+)(?:([!*^$|~]?=)[\"']?(.*?)[\"']?)?(?:\s+?([iIsS])?)?\]/i;
+    const matches = Array.from(attrString.matchAll(new RegExp(pattern, 'g')));
+    
+    return matches.map(match => {
+      const [, name, expr, value, sensitivity] = match;
+      const inverted = name.startsWith('!');
+      return [
+        inverted ? name.slice(1) : name,
+        expr || '',
+        value || '',
+        inverted,
+        sensitivity ? sensitivity.toLowerCase() : ''
+      ];
+    });
+  }
+
+  convertText(text: string): string {
+    if (!this.dom) return text;
+
+    const sourceCharset = this.dom._charset?.toUpperCase();
+    const targetCharset = this.dom._target_charset?.toUpperCase();
+
+    if (!sourceCharset || !targetCharset || sourceCharset === targetCharset) {
+      return text;
+    }
+
+    if (targetCharset === 'UTF-8' && this.isUtf8(text)) {
+      return text;
+    }
+
+    try {
+      const encoder = new TextEncoder();
+      const decoder = new TextDecoder(targetCharset);
+      const bytes = encoder.encode(text);
+      return decoder.decode(bytes);
+    } catch (e) {
+      return text;
+    }
+  }
+
+  private isUtf8(str: string): boolean {
+    try {
+      const encoder = new TextEncoder();
+      const decoder = new TextDecoder('utf-8', { fatal: true });
+      const bytes = encoder.encode(str);
+      decoder.decode(bytes);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  getDisplaySize(): { width: number; height: number } | false {
+    if (this.tag !== 'img') {
+      return false;
+    }
+
+    let width = -1;
+    let height = -1;
+
+    if (this.attr['width']) {
+      width = parseInt(this.attr['width'] as string, 10);
+    }
+
+    if (this.attr['height']) {
+      height = parseInt(this.attr['height'] as string, 10);
+    }
+
+    if (this.attr['style']) {
+      const styleStr = this.attr['style'] as string;
+      const matches = Array.from(styleStr.matchAll(/([\w-]+)\s*:\s*([^;]+)\s*;?/g));
+      
+      const styles = Object.fromEntries(
+        matches.map(([, prop, value]) => [prop, value.trim()])
+      );
+
+      if (styles['width'] && width === -1) {
+        const match = styles['width'].match(/^(\d+)px$/i);
+        if (match) {
+          width = parseInt(match[1], 10);
+        }
+      }
+
+      if (styles['height'] && height === -1) {
+        const match = styles['height'].match(/^(\d+)px$/i);
+        if (match) {
+          height = parseInt(match[1], 10);
+        }
+      }
+    }
+
+    return width !== -1 || height !== -1 ? { width, height } : false;
   }
 }
