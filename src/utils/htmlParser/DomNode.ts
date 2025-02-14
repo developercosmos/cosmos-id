@@ -10,6 +10,7 @@ export class DomNode {
   private _: Record<number, any>;
   tag_start: number;
   private dom: any;
+  private root?: DomNode;
 
   constructor(dom: any) {
     this.nodetype = HDOM_TYPE.TEXT;
@@ -28,10 +29,26 @@ export class DomNode {
   }
 
   clear(): void {
+    // Clear child nodes to prevent memory leaks
+    if (this.children) {
+      for (const child of this.children) {
+        child.clear();
+      }
+      this.children = [];
+    }
+
+    if (this.parent) {
+      this.parent.clear();
+      this.parent = null;
+    }
+
+    if (this.root) {
+      this.root.clear();
+      this.root = undefined;
+    }
+
     this.dom = null;
     this.nodes = [];
-    this.parent = null;
-    this.children = [];
   }
 
   hasChild(): boolean {
@@ -203,19 +220,19 @@ export class DomNode {
     const selectors = this.parseSelector(selector);
     if (selectors.length === 0) return [];
 
-    const foundKeys: Record<number, number> = {};
+    const foundKeys: Record<string, number> = {};
 
     // find each selector
     for (const selectorGroup of selectors) {
       const level = selectorGroup.length;
-      if (level === 0 || !this._[HDOM_INFO.BEGIN]) return [];
+      if (level === 0 || this._[HDOM_INFO.BEGIN] === undefined) return [];
 
-      let head: Record<number, number> = { [this._[HDOM_INFO.BEGIN]]: 1 };
+      let head: Record<string, number> = { [this._[HDOM_INFO.BEGIN].toString()]: 1 };
       let cmd = ' '; // Combinator
 
       // handle descendant selectors, no recursive!
       for (let l = 0; l < level; l++) {
-        const ret: Record<number, number> = {};
+        const ret: Record<string, number> = {};
 
         for (const k of Object.keys(head)) {
           const n = k === '-1' ? this.dom.root : this.dom.nodes[k];
@@ -227,15 +244,12 @@ export class DomNode {
       }
 
       for (const k of Object.keys(head)) {
-        if (!foundKeys[k]) {
-          foundKeys[k] = 1;
-        }
+        foundKeys[k] = 1;
       }
     }
 
     // sort keys
     const sortedKeys = Object.keys(foundKeys).sort((a, b) => Number(a) - Number(b));
-
     const found = sortedKeys.map(k => this.dom.nodes[k]);
 
     // return nth-element or array
@@ -246,7 +260,7 @@ export class DomNode {
 
   protected seek(
     selector: [string, string, string[], any[], string],
-    ret: Record<number, number>,
+    ret: Record<string, number>,
     parentCmd: string,
     lowercase = false
   ): void {
@@ -661,5 +675,25 @@ export class DomNode {
     }
 
     return width !== -1 || height !== -1 ? { width, height } : false;
+  }
+
+  protected parseCharset(): string {
+    let charset = '';
+
+    // Try to find charset in meta tags
+    const metaCharset = this.find('meta[charset]', 0);
+    if (metaCharset && metaCharset instanceof DomNode) {
+      const charsetAttr = metaCharset.getAttribute('charset');
+      if (typeof charsetAttr === 'string') {
+        charset = charsetAttr;
+      }
+    }
+
+    // If no charset found, default to UTF-8
+    if (!charset) {
+      charset = 'UTF-8';
+    }
+
+    return charset;
   }
 }
