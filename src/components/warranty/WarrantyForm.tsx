@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SERVER_URL } from "@/config/serverConfig";
+import { API_URL } from "@/config/serverConfig";
 
 interface WarrantyFormProps {
   initialData: {
@@ -43,7 +42,7 @@ export const WarrantyForm = ({ initialData, onSubmit, provinces }: WarrantyFormP
 
   const handleProvinceChange = async (province: string) => {
     try {
-      const response = await fetch(`${SERVER_URL}/api/PRO/Index`, {
+      const response = await fetch(`${API_URL}/api/PRO/Index`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -72,7 +71,7 @@ export const WarrantyForm = ({ initialData, onSubmit, provinces }: WarrantyFormP
     if (postalCode.length !== 5) return;
 
     try {
-      const response = await fetch(`${SERVER_URL}/api/QA/Index`, {
+      const response = await fetch(`${API_URL}/api/QA/Index`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

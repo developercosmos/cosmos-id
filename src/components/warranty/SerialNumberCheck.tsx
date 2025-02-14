@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { SERVER_URL } from "@/config/serverConfig";
+import { API_URL } from "@/config/serverConfig";
 
 interface SerialNumberCheckProps {
   onSerialValidated: (data: any) => void;
@@ -25,7 +25,7 @@ export const SerialNumberCheck = ({ onSerialValidated }: SerialNumberCheckProps)
     }
 
     try {
-      const response = await fetch(`${SERVER_URL}/api/QA/Index`, {
+      const response = await fetch(`${API_URL}/api/QA/Index`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

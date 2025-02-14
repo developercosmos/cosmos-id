@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { SERVER_URL } from "@/config/serverConfig";
+import { API_URL } from "@/config/serverConfig";
 import { SerialNumberCheck } from "@/components/warranty/SerialNumberCheck";
 import { WarrantyForm } from "@/components/warranty/WarrantyForm";
 import { TermsAndConditions } from "@/components/warranty/TermsAndConditions";
@@ -39,7 +38,7 @@ const Warranty = () => {
 
   const fetchFamilyProducts = async () => {
     try {
-      const response = await fetch(`${SERVER_URL}/api/PRO/Index`, {
+      const response = await fetch(`${API_URL}/api/PRO/Index`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,7 +62,7 @@ const Warranty = () => {
 
   const fetchProvinces = async () => {
     try {
-      const response = await fetch(`${SERVER_URL}/api/PRO/Index`, {
+      const response = await fetch(`${API_URL}/api/PRO/Index`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -115,7 +114,7 @@ const Warranty = () => {
         });
       }
 
-      const response = await fetch(`${SERVER_URL}/api/QA/Index`, {
+      const response = await fetch(`${API_URL}/api/QA/Index`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
