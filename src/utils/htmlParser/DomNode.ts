@@ -1,5 +1,4 @@
-
-import { HDOM_TYPE, HDOM_INFO } from './constants';
+import { HDOM_TYPE, HDOM_INFO, HDOM_QUOTE } from './constants';
 
 export class DomNode {
   nodetype: number;
@@ -126,6 +125,250 @@ export class DomNode {
     }
 
     return ret;
+  }
+
+  text(): string {
+    if (this._[HDOM_INFO.INNER] !== undefined) {
+      return this._[HDOM_INFO.INNER];
+    }
+
+    switch (this.nodetype) {
+      case HDOM_TYPE.TEXT: return this.dom.restoreNoise(this._[HDOM_INFO.TEXT]);
+      case HDOM_TYPE.COMMENT: return '';
+      case HDOM_TYPE.UNKNOWN: return '';
+    }
+
+    if (this.tag.toLowerCase() === 'script') return '';
+    if (this.tag.toLowerCase() === 'style') return '';
+
+    let ret = '';
+
+    if (this.nodes) {
+      for (const n of this.nodes) {
+        ret += this.convertText(n.text());
+        if (n.tag === 'span') {
+          ret += this.dom.defaultSpanText;
+        }
+      }
+    }
+
+    return ret;
+  }
+
+  xmlText(): string {
+    const ret = this.innerText();
+    return ret.replace(/<!\[CDATA\[/gi, '').replace(/\]\]>/g, '');
+  }
+
+  makeup(): string {
+    // text, comment, unknown
+    if (this._[HDOM_INFO.TEXT] !== undefined) {
+      return this.dom.restoreNoise(this._[HDOM_INFO.TEXT]);
+    }
+
+    let ret = '<' + this.tag;
+    let i = -1;
+
+    for (const [key, val] of Object.entries(this.attr)) {
+      i++;
+
+      // skip removed attribute
+      if (val === null || val === false) continue;
+
+      ret += this._[HDOM_INFO.SPACE]?.[i]?.[0] || '';
+
+      // no value attr: nowrap, checked selected...
+      if (val === true) {
+        ret += key;
+      } else {
+        let quote = '';
+        switch (this._[HDOM_INFO.QUOTE]?.[i]) {
+          case HDOM_QUOTE.DOUBLE: quote = '"'; break;
+          case HDOM_QUOTE.SINGLE: quote = '\''; break;
+          default: quote = '';
+        }
+
+        ret += key +
+          (this._[HDOM_INFO.SPACE]?.[i]?.[1] || '') +
+          '=' +
+          (this._[HDOM_INFO.SPACE]?.[i]?.[2] || '') +
+          quote + val + quote;
+      }
+    }
+
+    ret = this.dom.restoreNoise(ret);
+    return ret + (this._[HDOM_INFO.ENDSPACE] || '') + '>';
+  }
+
+  find(selector: string, idx: number | null = null, lowercase = false): DomNode[] | DomNode | null {
+    const selectors = this.parseSelector(selector);
+    if (selectors.length === 0) return [];
+
+    const foundKeys: Record<number, number> = {};
+
+    // find each selector
+    for (const selectorGroup of selectors) {
+      const level = selectorGroup.length;
+      if (level === 0 || !this._[HDOM_INFO.BEGIN]) return [];
+
+      let head: Record<number, number> = { [this._[HDOM_INFO.BEGIN]]: 1 };
+      let cmd = ' '; // Combinator
+
+      // handle descendant selectors, no recursive!
+      for (let l = 0; l < level; l++) {
+        const ret: Record<number, number> = {};
+
+        for (const k of Object.keys(head)) {
+          const n = k === '-1' ? this.dom.root : this.dom.nodes[k];
+          n.seek(selectorGroup[l], ret, cmd, lowercase);
+        }
+
+        head = ret;
+        cmd = selectorGroup[l][4]; // Next Combinator
+      }
+
+      for (const k of Object.keys(head)) {
+        if (!foundKeys[k]) {
+          foundKeys[k] = 1;
+        }
+      }
+    }
+
+    // sort keys
+    const sortedKeys = Object.keys(foundKeys).sort((a, b) => Number(a) - Number(b));
+
+    const found = sortedKeys.map(k => this.dom.nodes[k]);
+
+    // return nth-element or array
+    if (idx === null) return found;
+    if (idx < 0) idx = found.length + idx;
+    return found[idx] || null;
+  }
+
+  protected seek(
+    selector: [string, string, string[], any[], string],
+    ret: Record<number, number>,
+    parentCmd: string,
+    lowercase = false
+  ): void {
+    const [tag, id, cssClass, attributes, cmb] = selector;
+    let nodes: DomNode[] = [];
+
+    if (parentCmd === ' ') { // Descendant Combinator
+      let end = this._[HDOM_INFO.END] || 0;
+      if (end === 0) {
+        let parent = this.parent;
+        while (parent && !parent._[HDOM_INFO.END]) {
+          end--;
+          parent = parent.parent;
+        }
+        if (parent) {
+          end += parent._[HDOM_INFO.END];
+        }
+      }
+
+      const nodesStart = this._[HDOM_INFO.BEGIN] + 1;
+      const nodesCount = end - nodesStart;
+      nodes = this.dom.nodes.slice(nodesStart, nodesStart + nodesCount);
+    } else if (parentCmd === '>') { // Child Combinator
+      nodes = this.children;
+    } else if (parentCmd === '+' && 
+               this.parent && 
+               this.parent.children.includes(this)) { // Next-Sibling Combinator
+      const index = this.parent.children.indexOf(this) + 1;
+      if (index < this.parent.children.length) {
+        nodes.push(this.parent.children[index]);
+      }
+    } else if (parentCmd === '~' && 
+               this.parent && 
+               this.parent.children.includes(this)) { // Subsequent Sibling Combinator
+      const index = this.parent.children.indexOf(this);
+      nodes = this.parent.children.slice(index + 1);
+    }
+
+    for (const node of nodes) {
+      let pass = true;
+
+      // Skip root nodes
+      if (!node.parent) {
+        pass = false;
+      }
+
+      // Handle 'text' selector
+      if (pass && tag === 'text' && node.tag === 'text') {
+        const idx = this.dom.nodes.indexOf(node);
+        if (idx !== -1) ret[idx] = 1;
+        continue;
+      }
+
+      // Skip if node isn't a child node (i.e. text nodes)
+      if (pass && !node.parent?.children.includes(node)) {
+        pass = false;
+      }
+
+      // Skip if tag doesn't match
+      if (pass && tag !== '' && tag !== node.tag && tag !== '*') {
+        pass = false;
+      }
+
+      // Skip if ID doesn't exist
+      if (pass && id !== '' && !node.attr['id']) {
+        pass = false;
+      }
+
+      // Check if ID matches
+      if (pass && id !== '' && node.attr['id']) {
+        const nodeId = node.attr['id'].split(' ')[0];
+        if (id !== nodeId) pass = false;
+      }
+
+      // Check if all class(es) exist
+      if (pass && cssClass && cssClass.length > 0) {
+        if (node.attr['class']) {
+          const nodeClasses = lowercase 
+            ? node.attr['class'].toLowerCase().split(' ')
+            : node.attr['class'].split(' ');
+
+          for (const c of cssClass) {
+            if (!nodeClasses.includes(c)) {
+              pass = false;
+              break;
+            }
+          }
+        } else {
+          pass = false;
+        }
+      }
+
+      // Found a match
+      if (pass && node._[HDOM_INFO.BEGIN]) {
+        ret[node._[HDOM_INFO.BEGIN]] = 1;
+      }
+    }
+  }
+
+  protected match(exp: string, pattern: string, value: string, caseSensitivity: string): boolean {
+    if (caseSensitivity === 'i') {
+      pattern = pattern.toLowerCase();
+      value = value.toLowerCase();
+    }
+
+    switch (exp) {
+      case '=': return value === pattern;
+      case '!=': return value !== pattern;
+      case '^=': return value.startsWith(pattern);
+      case '$=': return value.endsWith(pattern);
+      case '*=': return value.includes(pattern);
+      case '|=': return value === pattern || value.startsWith(pattern + '-');
+      case '~=': return value.split(/\s+/).includes(pattern);
+      default: return false;
+    }
+  }
+
+  private parseSelector(selector: string): Array<[string, string, string[], any[], string]> {
+    // This is a simplified version - you would need to implement a proper CSS selector parser here
+    // For now, we'll just handle simple selectors
+    return [[selector, '', [], [], ' ']];
   }
 
   private convertText(text: string): string {
