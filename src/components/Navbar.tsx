@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Home, Info, Calendar, Shield, HeadphonesIcon, Phone, Wrench, HelpCircle, Package } from "lucide-react";
+import { Menu, X, Home, Info, Calendar, HeadphonesIcon, Phone, Wrench, HelpCircle, Package } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "./ui/button";
 
@@ -15,7 +15,6 @@ const Navbar = () => {
     { name: "Home", path: "/", icon: <Home className="w-4 h-4 mr-2" /> },
     { name: "About", path: "/about", icon: <Info className="w-4 h-4 mr-2" /> },
     { name: "Events", path: "/events", icon: <Calendar className="w-4 h-4 mr-2" /> },
-    { name: "Garansi", path: "/warranty", icon: <Shield className="w-4 h-4 mr-2" /> },
     {
       name: "Support",
       path: "/support",

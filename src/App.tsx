@@ -9,7 +9,6 @@ import Support from "./pages/Support";
 import Contact from "./pages/support/Contact";
 import FAQ from "./pages/support/FAQ";
 import ServiceCenter from "./pages/support/ServiceCenter";
-import Warranty from "./pages/Warranty";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
@@ -28,7 +27,6 @@ function App() {
         <Route path="/support/contact" element={<Contact />} />
         <Route path="/support/faq" element={<FAQ />} />
         <Route path="/support/service-center" element={<ServiceCenter />} />
-        <Route path="/warranty" element={<Warranty />} />
         <Route 
           path="/admin" 
           element={

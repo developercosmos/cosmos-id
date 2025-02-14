@@ -24,7 +24,6 @@ const Footer = () => {
     layanan: {
       title: "Layanan",
       links: [
-        { name: "Warranty", href: "/warranty" },
         { name: "Contact Us", href: "/support/contact" },
         { name: "Service Center", href: "/support/service-center" },
         { name: "FAQ", href: "/support/faq" },
