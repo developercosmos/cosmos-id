@@ -7,7 +7,7 @@ export const HDOM_TYPE = {
   ENDTAG: 4,
   ROOT: 5,
   UNKNOWN: 6
-} as const;
+} as Record<string, number>;
 
 export const HDOM_QUOTE = {
   DOUBLE: 0,

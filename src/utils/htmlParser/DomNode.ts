@@ -149,8 +149,8 @@ export class DomNode {
       return this._[HDOM_INFO.INNER];
     }
 
-    // Compare nodetype with a number since HDOM_TYPE.ROOT is a number
-    if (this.nodetype === HDOM_TYPE.ROOT) {
+    // Compare nodetype with HDOM_TYPE.ROOT as a number
+    if (this.nodetype === (HDOM_TYPE.ROOT as number)) {
       return '';
     }
 
