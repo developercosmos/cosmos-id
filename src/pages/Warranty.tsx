@@ -43,11 +43,9 @@ const Warranty = () => {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
+          'Cache-Control': 'no-cache',
+          'X-Content-Type-Options': 'nosniff',
         },
-        credentials: 'include',
         body: JSON.stringify({
           d: [{}],
           i: "11E044EE-33E7-11EB-9D97-0AB723CF68D0"
@@ -72,11 +70,9 @@ const Warranty = () => {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
+          'Cache-Control': 'no-cache',
+          'X-Content-Type-Options': 'nosniff',
         },
-        credentials: 'include',
         body: JSON.stringify({
           d: [{}],
           i: "1350239D-327D-11EB-B811-0206859B6046"
@@ -201,6 +197,8 @@ const Warranty = () => {
                       <Button
                         variant="outline"
                         onClick={() => setShowEulaDialog(true)}
+                        aria-label="View Terms and Conditions"
+                        title="View Terms and Conditions"
                       >
                         View Terms
                       </Button>

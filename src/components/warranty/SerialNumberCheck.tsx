@@ -30,11 +30,9 @@ export const SerialNumberCheck = ({ onSerialValidated }: SerialNumberCheckProps)
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type',
+          'Cache-Control': 'no-cache',
+          'X-Content-Type-Options': 'nosniff',
         },
-        credentials: 'include',
         body: JSON.stringify({
           d: [{
             sn: serialNumber,
@@ -70,11 +68,19 @@ export const SerialNumberCheck = ({ onSerialValidated }: SerialNumberCheckProps)
       <div className="flex gap-2">
         <Input
           id="serialNumber"
+          name="serialNumber"
           placeholder="Enter serial number"
           value={serialNumber}
           onChange={(e) => setSerialNumber(e.target.value)}
+          aria-label="Serial Number Input"
         />
-        <Button onClick={handleSerialCheck}>Check</Button>
+        <Button 
+          onClick={handleSerialCheck}
+          aria-label="Check Serial Number"
+          title="Check Serial Number"
+        >
+          Check
+        </Button>
       </div>
     </div>
   );
