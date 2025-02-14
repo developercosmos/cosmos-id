@@ -1,6 +1,6 @@
 
 // HTML DOM Parser Constants
-export enum HDOM_TYPE {
+export const enum HDOM_TYPE {
   ELEMENT = 1,
   COMMENT = 2,
   TEXT = 3,
@@ -9,7 +9,7 @@ export enum HDOM_TYPE {
   UNKNOWN = 6
 }
 
-export enum HDOM_INFO {
+export const enum HDOM_INFO {
   BEGIN = 0,
   END = 1,
   QUOTE = 2,
