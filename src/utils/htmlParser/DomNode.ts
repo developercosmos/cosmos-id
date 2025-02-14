@@ -7,7 +7,7 @@ export class DomNode {
   children: DomNode[];
   nodes: DomNode[];
   parent: DomNode | null;
-  private _: Record<HdomInfo | number, any>;
+  private _: Record<number, any>;
   tag_start: number;
   private dom: any;
   private root?: DomNode;
@@ -19,7 +19,7 @@ export class DomNode {
     this.children = [];
     this.nodes = [];
     this.parent = null;
-    this._ = {} as Record<HdomInfo | number, any>;
+    this._ = {};
     this.tag_start = 0;
     this.dom = dom;
     
@@ -145,9 +145,8 @@ export class DomNode {
   }
 
   text(): string {
-    const innerInfo = HDOM_INFO.INNER as number;
-    if (this._[innerInfo] !== undefined) {
-      return this._[innerInfo];
+    if (this._[HDOM_INFO.INNER] !== undefined) {
+      return this._[HDOM_INFO.INNER];
     }
 
     if (this.nodetype === HDOM_TYPE.ROOT) {

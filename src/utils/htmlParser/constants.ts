@@ -1,17 +1,17 @@
 
 // HTML DOM Parser Constants
-export const HDOM_TYPE = {
+export const HDOM_TYPE: Record<string, number> = {
   ELEMENT: 1,
   COMMENT: 2,
   TEXT: 3,
   ENDTAG: 4,
   ROOT: 5,
   UNKNOWN: 6
-} as const;
+};
 
-export type HdomType = (typeof HDOM_TYPE)[keyof typeof HDOM_TYPE];
+export type HdomType = number;
 
-export const HDOM_INFO = {
+export const HDOM_INFO: Record<string, number> = {
   BEGIN: 0,
   END: 1,
   QUOTE: 2,
@@ -20,9 +20,9 @@ export const HDOM_INFO = {
   INNER: 5,
   OUTER: 6,
   ENDSPACE: 7
-} as const;
+};
 
-export type HdomInfo = (typeof HDOM_INFO)[keyof typeof HDOM_INFO];
+export type HdomInfo = number;
 
 export const HDOM_QUOTE = {
   DOUBLE: 0,
