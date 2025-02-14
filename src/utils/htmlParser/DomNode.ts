@@ -467,11 +467,12 @@ export class DomNode {
 
     if (Array.isArray(className)) {
       for (const c of className) {
-        if (this.attr['class']) {
+        const currentClass = this.attr['class'];
+        if (currentClass && typeof currentClass === 'string') {
           if (this.hasClass(c)) {
             continue;
           } else {
-            this.attr['class'] = (this.attr['class'] as string) + ' ' + c;
+            this.attr['class'] = currentClass + ' ' + c;
           }
         } else {
           this.attr['class'] = c;
@@ -481,15 +482,16 @@ export class DomNode {
   }
 
   hasClass(className: string): boolean {
-    if (typeof className === 'string' && this.attr['class']) {
-      const classAttr = this.attr['class'] as string;
-      return classAttr.split(' ').includes(className);
+    const currentClass = this.attr['class'];
+    if (typeof className === 'string' && currentClass && typeof currentClass === 'string') {
+      return currentClass.split(' ').includes(className);
     }
     return false;
   }
 
   removeClass(className?: string | string[]): void {
-    if (!this.attr['class']) {
+    const currentClass = this.attr['class'];
+    if (!currentClass || typeof currentClass !== 'string') {
       return;
     }
 
@@ -498,7 +500,7 @@ export class DomNode {
       return;
     }
 
-    const classes = (this.attr['class'] as string).split(' ');
+    const classes = currentClass.split(' ');
     
     if (typeof className === 'string') {
       className = className.split(' ');
@@ -577,11 +579,16 @@ export class DomNode {
   }
 
   getElementByTagName(name: string): DomNode | null {
-    return this.find(name, 0);
+    const result = this.find(name, 0);
+    return result instanceof DomNode ? result : null;
   }
 
   getElementsByTagName(name: string, idx: number | null = null): DomNode[] | DomNode | null {
-    return this.find(name, idx);
+    const result = this.find(name, idx);
+    if (idx === null) {
+      return Array.isArray(result) ? result : [];
+    }
+    return result instanceof DomNode ? result : null;
   }
 
   parentNode(): DomNode | null {
@@ -615,23 +622,19 @@ export class DomNode {
     let width = -1;
     let height = -1;
 
-    if (this.attr['width']) {
-      const widthAttr = this.attr['width'];
-      if (typeof widthAttr === 'string') {
-        width = parseInt(widthAttr, 10);
-      }
+    const widthAttr = this.attr['width'];
+    if (typeof widthAttr === 'string') {
+      width = parseInt(widthAttr, 10);
     }
 
-    if (this.attr['height']) {
-      const heightAttr = this.attr['height'];
-      if (typeof heightAttr === 'string') {
-        height = parseInt(heightAttr, 10);
-      }
+    const heightAttr = this.attr['height'];
+    if (typeof heightAttr === 'string') {
+      height = parseInt(heightAttr, 10);
     }
 
-    if (this.attr['style'] && typeof this.attr['style'] === 'string') {
-      const styleStr = this.attr['style'];
-      const matches = Array.from(styleStr.matchAll(/([\w-]+)\s*:\s*([^;]+)\s*;?/g));
+    const styleAttr = this.attr['style'];
+    if (typeof styleAttr === 'string') {
+      const matches = Array.from(styleAttr.matchAll(/([\w-]+)\s*:\s*([^;]+)\s*;?/g));
       
       const styles = Object.fromEntries(
         matches.map(([, prop, value]) => [prop, value.trim()])
