@@ -455,6 +455,158 @@ export class DomNode {
     }
   }
 
+  save(filepath: string = ''): string {
+    const ret = this.outerText();
+    return ret;
+  }
+
+  addClass(className: string | string[]): void {
+    if (typeof className === 'string') {
+      className = className.split(' ');
+    }
+
+    if (Array.isArray(className)) {
+      for (const c of className) {
+        if (this.attr['class']) {
+          if (this.hasClass(c)) {
+            continue;
+          } else {
+            this.attr['class'] = (this.attr['class'] as string) + ' ' + c;
+          }
+        } else {
+          this.attr['class'] = c;
+        }
+      }
+    }
+  }
+
+  hasClass(className: string): boolean {
+    if (typeof className === 'string' && this.attr['class']) {
+      const classAttr = this.attr['class'] as string;
+      return classAttr.split(' ').includes(className);
+    }
+    return false;
+  }
+
+  removeClass(className?: string | string[]): void {
+    if (!this.attr['class']) {
+      return;
+    }
+
+    if (!className) {
+      delete this.attr['class'];
+      return;
+    }
+
+    const classes = (this.attr['class'] as string).split(' ');
+    
+    if (typeof className === 'string') {
+      className = className.split(' ');
+    }
+
+    if (Array.isArray(className)) {
+      const remainingClasses = classes.filter(c => !className.includes(c));
+      if (remainingClasses.length === 0) {
+        delete this.attr['class'];
+      } else {
+        this.attr['class'] = remainingClasses.join(' ');
+      }
+    }
+  }
+
+  getAllAttributes(): Record<string, string | boolean> {
+    return this.attr;
+  }
+
+  getAttribute(name: string): string | boolean | undefined {
+    return this.attr[name];
+  }
+
+  setAttribute(name: string, value: string | boolean): void {
+    this.attr[name] = value;
+  }
+
+  hasAttribute(name: string): boolean {
+    return name in this.attr;
+  }
+
+  removeAttribute(name: string): void {
+    delete this.attr[name];
+  }
+
+  remove(): void {
+    if (this.parent) {
+      this.parent.removeChild(this);
+    }
+  }
+
+  removeChild(node: DomNode): void {
+    const nidx = this.nodes.indexOf(node);
+    const cidx = this.children.indexOf(node);
+    const didx = this.dom.nodes.indexOf(node);
+
+    if (nidx !== -1 && cidx !== -1 && didx !== -1) {
+      for (const child of [...node.children]) {
+        node.removeChild(child);
+      }
+
+      for (const entity of [...node.nodes]) {
+        const enidx = node.nodes.indexOf(entity);
+        const edidx = node.dom.nodes.indexOf(entity);
+
+        if (enidx !== -1 && edidx !== -1) {
+          node.nodes.splice(enidx, 1);
+          node.dom.nodes.splice(edidx, 1);
+        }
+      }
+
+      this.nodes.splice(nidx, 1);
+      this.children.splice(cidx, 1);
+      this.dom.nodes.splice(didx, 1);
+
+      node.clear();
+    }
+  }
+
+  getElementById(id: string): DomNode | null {
+    return this.find(`#${id}`, 0);
+  }
+
+  getElementsById(id: string, idx: number | null = null): DomNode[] | DomNode | null {
+    return this.find(`#${id}`, idx);
+  }
+
+  getElementByTagName(name: string): DomNode | null {
+    return this.find(name, 0);
+  }
+
+  getElementsByTagName(name: string, idx: number | null = null): DomNode[] | DomNode | null {
+    return this.find(name, idx);
+  }
+
+  parentNode(): DomNode | null {
+    return this.parent;
+  }
+
+  childNodes(idx: number = -1): DomNode[] | DomNode | null {
+    return idx === -1 ? this.children : (this.children[idx] || null);
+  }
+
+  hasChildNodes(): boolean {
+    return this.hasChild();
+  }
+
+  nodeName(): string {
+    return this.tag;
+  }
+
+  appendChild(node: DomNode): DomNode {
+    node.parent = this;
+    this.nodes.push(node);
+    this.children.push(node);
+    return node;
+  }
+
   getDisplaySize(): { width: number; height: number } | false {
     if (this.tag !== 'img') {
       return false;
@@ -464,15 +616,21 @@ export class DomNode {
     let height = -1;
 
     if (this.attr['width']) {
-      width = parseInt(this.attr['width'] as string, 10);
+      const widthAttr = this.attr['width'];
+      if (typeof widthAttr === 'string') {
+        width = parseInt(widthAttr, 10);
+      }
     }
 
     if (this.attr['height']) {
-      height = parseInt(this.attr['height'] as string, 10);
+      const heightAttr = this.attr['height'];
+      if (typeof heightAttr === 'string') {
+        height = parseInt(heightAttr, 10);
+      }
     }
 
-    if (this.attr['style']) {
-      const styleStr = this.attr['style'] as string;
+    if (this.attr['style'] && typeof this.attr['style'] === 'string') {
+      const styleStr = this.attr['style'];
       const matches = Array.from(styleStr.matchAll(/([\w-]+)\s*:\s*([^;]+)\s*;?/g));
       
       const styles = Object.fromEntries(
