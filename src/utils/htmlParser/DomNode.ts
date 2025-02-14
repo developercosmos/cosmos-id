@@ -225,7 +225,7 @@ export class DomNode {
     // find each selector
     for (const selectorGroup of selectors) {
       const level = selectorGroup.length;
-      if (level === 0 || this._[HDOM_INFO.BEGIN] === undefined) return [];
+      if (level === 0 || typeof this._[HDOM_INFO.BEGIN] === 'undefined') return [];
 
       let head: Record<string, number> = { [this._[HDOM_INFO.BEGIN].toString()]: 1 };
       let cmd = ' '; // Combinator
@@ -255,7 +255,8 @@ export class DomNode {
     // return nth-element or array
     if (idx === null) return found;
     if (idx < 0) idx = found.length + idx;
-    return found[idx] || null;
+    const foundNode = found[idx];
+    return foundNode || null;
   }
 
   protected seek(
@@ -480,29 +481,23 @@ export class DomNode {
   }
 
   addClass(className: string | string[]): void {
-    if (typeof className === 'string') {
-      className = className.split(' ');
-    }
-
-    if (Array.isArray(className)) {
-      for (const c of className) {
-        const currentClass = this.attr['class'];
-        if (currentClass && typeof currentClass === 'string') {
-          if (this.hasClass(c)) {
-            continue;
-          } else {
-            this.attr['class'] = currentClass + ' ' + c;
-          }
-        } else {
-          this.attr['class'] = c;
+    const classesToAdd = Array.isArray(className) ? className : className.split(' ');
+    
+    for (const c of classesToAdd) {
+      const currentClass = this.attr['class'];
+      if (typeof currentClass === 'string') {
+        if (!this.hasClass(c)) {
+          this.attr['class'] = `${currentClass} ${c}`.trim();
         }
+      } else {
+        this.attr['class'] = c;
       }
     }
   }
 
   hasClass(className: string): boolean {
     const currentClass = this.attr['class'];
-    if (typeof className === 'string' && currentClass && typeof currentClass === 'string') {
+    if (typeof currentClass === 'string') {
       return currentClass.split(' ').includes(className);
     }
     return false;
@@ -510,7 +505,7 @@ export class DomNode {
 
   removeClass(className?: string | string[]): void {
     const currentClass = this.attr['class'];
-    if (!currentClass || typeof currentClass !== 'string') {
+    if (typeof currentClass !== 'string') {
       return;
     }
 
@@ -519,19 +514,14 @@ export class DomNode {
       return;
     }
 
-    const classes = currentClass.split(' ');
+    const currentClasses = currentClass.split(' ');
+    const classesToRemove = Array.isArray(className) ? className : className.split(' ');
     
-    if (typeof className === 'string') {
-      className = className.split(' ');
-    }
-
-    if (Array.isArray(className)) {
-      const remainingClasses = classes.filter(c => !className.includes(c));
-      if (remainingClasses.length === 0) {
-        delete this.attr['class'];
-      } else {
-        this.attr['class'] = remainingClasses.join(' ');
-      }
+    const remainingClasses = currentClasses.filter(c => !classesToRemove.includes(c));
+    if (remainingClasses.length === 0) {
+      delete this.attr['class'];
+    } else {
+      this.attr['class'] = remainingClasses.join(' ');
     }
   }
 
