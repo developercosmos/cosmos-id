@@ -346,20 +346,25 @@ export class DomNode {
     }
   }
 
-  protected match(exp: string, pattern: string, value: string, caseSensitivity: string): boolean {
+  protected match(exp: string, pattern: string, value: string | boolean, caseSensitivity: string): boolean {
+    if (typeof value !== 'string') return false;
+    
+    let patternStr = pattern;
+    let valueStr = value;
+
     if (caseSensitivity === 'i') {
-      pattern = pattern.toLowerCase();
-      value = value.toLowerCase();
+      patternStr = patternStr.toLowerCase();
+      valueStr = valueStr.toLowerCase();
     }
 
     switch (exp) {
-      case '=': return value === pattern;
-      case '!=': return value !== pattern;
-      case '^=': return value.startsWith(pattern);
-      case '$=': return value.endsWith(pattern);
-      case '*=': return value.includes(pattern);
-      case '|=': return value === pattern || value.startsWith(pattern + '-');
-      case '~=': return value.split(/\s+/).includes(pattern);
+      case '=': return valueStr === patternStr;
+      case '!=': return valueStr !== patternStr;
+      case '^=': return valueStr.startsWith(patternStr);
+      case '$=': return valueStr.endsWith(patternStr);
+      case '*=': return valueStr.includes(patternStr);
+      case '|=': return valueStr === patternStr || valueStr.startsWith(patternStr + '-');
+      case '~=': return valueStr.split(/\s+/).includes(patternStr);
       default: return false;
     }
   }
