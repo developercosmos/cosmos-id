@@ -9,7 +9,7 @@ export const HDOM_TYPE = {
   UNKNOWN: 6
 } as const;
 
-export type HdomType = typeof HDOM_TYPE[keyof typeof HDOM_TYPE];
+export type HdomType = (typeof HDOM_TYPE)[keyof typeof HDOM_TYPE];
 
 export const HDOM_QUOTE = {
   DOUBLE: 0,

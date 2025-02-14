@@ -1,3 +1,4 @@
+
 import { HDOM_TYPE, HDOM_INFO, HDOM_QUOTE, HdomType } from './constants';
 
 export class DomNode {
@@ -149,8 +150,8 @@ export class DomNode {
       return this._[HDOM_INFO.INNER];
     }
 
-    // Compare nodetype with HDOM_TYPE.ROOT as a number
-    if (this.nodetype === (HDOM_TYPE.ROOT as number)) {
+    const ROOT_TYPE: HdomType = HDOM_TYPE.ROOT;
+    if (this.nodetype === ROOT_TYPE) {
       return '';
     }
 
