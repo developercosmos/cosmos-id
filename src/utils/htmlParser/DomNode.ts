@@ -149,8 +149,8 @@ export class DomNode {
       return this._[HDOM_INFO.INNER];
     }
 
-    // Fix comparison by comparing against the numeric value directly
-    if (this.nodetype === 5) { // HDOM_TYPE.ROOT is 5
+    // Compare nodetype with the numeric value from HDOM_TYPE enum
+    if (this.nodetype === HDOM_TYPE.ROOT) {
       return '';
     }
 
@@ -586,7 +586,7 @@ export class DomNode {
   }
 
   getElementById(id: string): DomNode | null {
-    return this.find(`#${id}`, 0);
+    return this.find(`#${id}`, 0) as DomNode | null;
   }
 
   getElementsById(id: string, idx: number | null = null): DomNode[] | DomNode | null {
@@ -595,7 +595,10 @@ export class DomNode {
 
   getElementByTagName(name: string): DomNode | null {
     const result = this.find(name, 0);
-    return result instanceof DomNode ? result : null;
+    if (result instanceof DomNode) {
+      return result;
+    }
+    return null;
   }
 
   getElementsByTagName(name: string, idx: number | null = null): DomNode[] | DomNode | null {
@@ -608,11 +611,7 @@ export class DomNode {
       return [];
     }
     
-    if (result instanceof DomNode) {
-      return result;
-    }
-    
-    return null;
+    return result instanceof DomNode ? result : null;
   }
 
   parentNode(): DomNode | null {
