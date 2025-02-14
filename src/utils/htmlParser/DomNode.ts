@@ -338,10 +338,11 @@ export class DomNode {
 
       // Check if all class(es) exist
       if (pass && cssClass && cssClass.length > 0) {
-        if (node.attr['class']) {
+        const attrClass = this.attr['class'];
+        if (typeof attrClass === 'string') {
           const nodeClasses = lowercase 
-            ? node.attr['class'].toLowerCase().split(' ')
-            : node.attr['class'].split(' ');
+            ? attrClass.toLowerCase().split(' ')
+            : attrClass.split(' ');
 
           for (const c of cssClass) {
             if (!nodeClasses.includes(c)) {
