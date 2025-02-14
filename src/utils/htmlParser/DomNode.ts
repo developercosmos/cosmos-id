@@ -1,7 +1,7 @@
-import { HDOM_TYPE, HDOM_INFO, HDOM_QUOTE, HdomType, HdomInfo } from './constants';
+import { HDOM_TYPE, HDOM_INFO, HDOM_QUOTE } from './constants';
 
 export class DomNode {
-  nodetype: HdomType;
+  nodetype: HDOM_TYPE;
   tag: string;
   attr: Record<string, string | boolean>;
   children: DomNode[];
@@ -145,7 +145,7 @@ export class DomNode {
   }
 
   text(): string {
-    if (this._[HDOM_INFO.INNER] !== undefined) {
+    if (typeof this._[HDOM_INFO.INNER] !== 'undefined') {
       return this._[HDOM_INFO.INNER];
     }
 

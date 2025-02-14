@@ -1,28 +1,24 @@
 
 // HTML DOM Parser Constants
-export const HDOM_TYPE: Record<string, number> = {
-  ELEMENT: 1,
-  COMMENT: 2,
-  TEXT: 3,
-  ENDTAG: 4,
-  ROOT: 5,
-  UNKNOWN: 6
-};
+export enum HDOM_TYPE {
+  ELEMENT = 1,
+  COMMENT = 2,
+  TEXT = 3,
+  ENDTAG = 4,
+  ROOT = 5,
+  UNKNOWN = 6
+}
 
-export type HdomType = number;
-
-export const HDOM_INFO: Record<string, number> = {
-  BEGIN: 0,
-  END: 1,
-  QUOTE: 2,
-  SPACE: 3,
-  TEXT: 4,
-  INNER: 5,
-  OUTER: 6,
-  ENDSPACE: 7
-};
-
-export type HdomInfo = number;
+export enum HDOM_INFO {
+  BEGIN = 0,
+  END = 1,
+  QUOTE = 2,
+  SPACE = 3,
+  TEXT = 4,
+  INNER = 5,
+  OUTER = 6,
+  ENDSPACE = 7
+}
 
 export const HDOM_QUOTE = {
   DOUBLE: 0,
