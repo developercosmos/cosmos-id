@@ -1,5 +1,4 @@
-
-import { HDOM_TYPE, HDOM_INFO, HDOM_QUOTE, HdomType } from './constants';
+import { HDOM_TYPE, HDOM_INFO, HDOM_QUOTE, HdomType, HdomInfo } from './constants';
 
 export class DomNode {
   nodetype: HdomType;
@@ -8,7 +7,7 @@ export class DomNode {
   children: DomNode[];
   nodes: DomNode[];
   parent: DomNode | null;
-  private _: Record<number, any>;
+  private _: Record<HdomInfo, any>;
   tag_start: number;
   private dom: any;
   private root?: DomNode;
@@ -20,7 +19,7 @@ export class DomNode {
     this.children = [];
     this.nodes = [];
     this.parent = null;
-    this._ = {};
+    this._ = {} as Record<HdomInfo, any>;
     this.tag_start = 0;
     this.dom = dom;
     
@@ -146,12 +145,12 @@ export class DomNode {
   }
 
   text(): string {
-    if (this._[HDOM_INFO.INNER] !== undefined) {
-      return this._[HDOM_INFO.INNER];
+    const innerText = this._[HDOM_INFO.INNER];
+    if (innerText !== undefined) {
+      return innerText;
     }
 
-    const ROOT_TYPE: HdomType = HDOM_TYPE.ROOT;
-    if (this.nodetype === ROOT_TYPE) {
+    if (this.nodetype === HDOM_TYPE.ROOT) {
       return '';
     }
 

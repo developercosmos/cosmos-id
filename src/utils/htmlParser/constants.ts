@@ -11,12 +11,6 @@ export const HDOM_TYPE = {
 
 export type HdomType = (typeof HDOM_TYPE)[keyof typeof HDOM_TYPE];
 
-export const HDOM_QUOTE = {
-  DOUBLE: 0,
-  SINGLE: 1,
-  NO: 3
-} as const;
-
 export const HDOM_INFO = {
   BEGIN: 0,
   END: 1,
@@ -26,6 +20,14 @@ export const HDOM_INFO = {
   INNER: 5,
   OUTER: 6,
   ENDSPACE: 7
+} as const;
+
+export type HdomInfo = (typeof HDOM_INFO)[keyof typeof HDOM_INFO];
+
+export const HDOM_QUOTE = {
+  DOUBLE: 0,
+  SINGLE: 1,
+  NO: 3
 } as const;
 
 export const DEFAULT_TARGET_CHARSET = 'UTF-8';
