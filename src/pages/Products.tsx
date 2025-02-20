@@ -6,7 +6,13 @@ import { Product, getProductsByCategory } from "../services/productService";
 import ProductGrid from "../components/products/ProductGrid";
 import Footer from "../components/Footer";
 import { Input } from "../components/ui/input";
-import { Select } from "../components/ui/select";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 
 const Products = () => {
   const [kitchenProducts, setKitchenProducts] = useState<Product[]>([]);
@@ -72,16 +78,17 @@ const Products = () => {
             <p className="text-gray-600">{products.length} Ditemukan</p>
             <div className="flex items-center space-x-2">
               <span className="text-gray-600">Sort by:</span>
-              <Select
-                value={sortOption}
-                onValueChange={(value) => setSortOption(value)}
-                items={[
-                  { value: "Featured", label: "Featured" },
-                  { value: "Newest", label: "Newest" },
-                  { value: "Price: Low to High", label: "Price: Low to High" },
-                  { value: "Price: High to Low", label: "Price: High to Low" },
-                ]}
-              />
+              <Select value={sortOption} onValueChange={setSortOption}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Featured">Featured</SelectItem>
+                  <SelectItem value="Newest">Newest</SelectItem>
+                  <SelectItem value="Price: Low to High">Price: Low to High</SelectItem>
+                  <SelectItem value="Price: High to Low">Price: High to Low</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
