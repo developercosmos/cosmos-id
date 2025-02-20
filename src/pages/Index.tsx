@@ -5,11 +5,11 @@ import Footer from "../components/Footer";
 
 const Index = () => {
   return (
-    <main className="min-h-screen bg-white">
-      <Navbar />
-      <div className="pt-20">
-        <VideoSlider />
+    <main className="min-h-screen bg-white relative">
+      <div className="fixed top-0 left-0 right-0 z-50">
+        <Navbar />
       </div>
+      <VideoSlider />
       <Footer />
     </main>
   );

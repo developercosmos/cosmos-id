@@ -18,45 +18,48 @@ interface Slide {
 }
 
 const fetchSlides = async (): Promise<Slide[]> => {
-  console.log('Fetching slides from server...');
-  const response = await fetch(`${SERVER_URL}/src/server/slides.php`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch slides');
-  }
-  const data = await response.json();
-  console.log('Fetched slides:', data);
-  
-  if (!Array.isArray(data)) {
-    console.error('Invalid data format:', data);
+  try {
+    console.log('Fetching slides from server...');
+    const response = await fetch(`${SERVER_URL}/src/server/slides.php`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch slides');
+    }
+    const data = await response.json();
+    console.log('Fetched slides:', data);
+    
+    if (!Array.isArray(data)) {
+      console.error('Invalid data format:', data);
+      return [];
+    }
+
+    return data.map(slide => {
+      let imageUrl = slide.image;
+      if (!imageUrl.startsWith('http')) {
+        imageUrl = imageUrl.replace(SERVER_URL, '');
+        imageUrl = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
+        imageUrl = `${SERVER_URL}${imageUrl}`;
+      }
+      return {
+        image: imageUrl,
+        title: slide.title || '',
+        subtitle: slide.subtitle || '',
+        productLink: slide.productLink || '#',
+        cta: {
+          primary: {
+            text: slide.cta?.primary?.text || 'Learn More',
+            link: slide.cta?.primary?.link || '#'
+          },
+          secondary: {
+            text: slide.cta?.secondary?.text || 'View Details',
+            link: slide.cta?.secondary?.link || '#'
+          }
+        }
+      };
+    });
+  } catch (error) {
+    console.error('Error fetching slides:', error);
     return [];
   }
-
-  return data.map(slide => {
-    let imageUrl = slide.image;
-    if (!imageUrl.startsWith('http')) {
-      imageUrl = imageUrl.replace(SERVER_URL, '');
-      imageUrl = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
-      imageUrl = `${SERVER_URL}${imageUrl}`;
-    }
-    console.log('Processed image URL:', imageUrl);
-
-    return {
-      image: imageUrl,
-      title: slide.title || '',
-      subtitle: slide.subtitle || '',
-      productLink: slide.productLink || '#',
-      cta: {
-        primary: {
-          text: slide.cta?.primary?.text || 'Learn More',
-          link: slide.cta?.primary?.link || '#'
-        },
-        secondary: {
-          text: slide.cta?.secondary?.text || 'View Details',
-          link: slide.cta?.secondary?.link || '#'
-        }
-      }
-    };
-  });
 };
 
 const VideoSlider = () => {
@@ -66,6 +69,7 @@ const VideoSlider = () => {
   const { data: slides = [], isError, error } = useQuery({
     queryKey: ['slides'],
     queryFn: fetchSlides,
+    retry: false
   });
 
   const nextSlide = () => {
@@ -87,15 +91,23 @@ const VideoSlider = () => {
 
   if (isError) {
     console.error('Error loading slides:', error);
-    return null;
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-gray-600">Error loading slides</p>
+      </div>
+    );
   }
 
   if (slides.length === 0) {
-    return null;
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-gray-600">No slides available</p>
+      </div>
+    );
   }
 
   return (
-    <div className="relative w-full h-[calc(100vh)] overflow-hidden">
+    <div className="relative w-full h-screen overflow-hidden">
       {slides.map((slide, index) => (
         <div
           key={index}

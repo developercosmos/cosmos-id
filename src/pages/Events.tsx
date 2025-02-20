@@ -9,7 +9,7 @@ import { isPast } from "date-fns";
 import EventsTabContent from "@/components/events/EventsTabContent";
 
 const Events = () => {
-  const { data: events, isLoading, error } = useQuery({
+  const { data: events = [], isLoading, error } = useQuery({
     queryKey: ['events'],
     queryFn: async () => {
       console.log('Fetching events from server...');
@@ -29,23 +29,8 @@ const Events = () => {
     return `${SERVER_URL}/public/uploads/${imagePath}`;
   };
 
-  const pastEvents = events?.filter(event => isPast(new Date(event.date))) || [];
-  const upcomingEvents = events?.filter(event => !isPast(new Date(event.date))) || [];
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="container mx-auto pt-24 px-4">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-red-600">Error</h2>
-            <p className="text-gray-600">Failed to load events. Please try again later.</p>
-          </div>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
+  const pastEvents = events.filter(event => isPast(new Date(event.date)));
+  const upcomingEvents = events.filter(event => !isPast(new Date(event.date)));
 
   return (
     <div className="min-h-screen bg-gray-50">
