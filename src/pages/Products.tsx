@@ -1,13 +1,17 @@
+
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "../components/ui/use-toast";
 import { Product, getProductsByCategory } from "../services/productService";
 import ProductGrid from "../components/products/ProductGrid";
+import Footer from "../components/Footer";
+import { Input } from "../components/ui/input";
+import { Select } from "../components/ui/select";
 
 const Products = () => {
   const [kitchenProducts, setKitchenProducts] = useState<Product[]>([]);
   const [homeProducts, setHomeProducts] = useState<Product[]>([]);
+  const [sortOption, setSortOption] = useState("Featured");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -34,30 +38,85 @@ const Products = () => {
     fetchProducts();
   }, [toast]);
 
+  // Currently showing kitchen products as per the Figma design
+  const products = kitchenProducts;
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <Navbar />
-      <div className="container mx-auto pt-24 px-4 pb-16">
-        <h1 className="text-4xl font-bold text-center mb-2">Our Products</h1>
-        <p className="text-gray-600 text-center mb-8">
-          Discover our range of high-quality home and kitchen appliances
-        </p>
-        
-        <Tabs defaultValue="kitchen" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="kitchen">Kitchen Appliances</TabsTrigger>
-            <TabsTrigger value="home">Home Appliances</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="kitchen">
-            <ProductGrid products={kitchenProducts} />
-          </TabsContent>
-          
-          <TabsContent value="home">
-            <ProductGrid products={homeProducts} />
-          </TabsContent>
-        </Tabs>
+      
+      {/* Hero Section */}
+      <div className="relative h-[400px] w-full">
+        <img 
+          src="/lovable-uploads/06ea0975-8f44-4a43-b331-55edbc1b4ccb.png"
+          alt="Kitchen Banner"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+          <h1 className="text-6xl font-bold text-white">Kitchen</h1>
+        </div>
       </div>
+
+      {/* Breadcrumb and Results */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col space-y-4">
+          {/* Breadcrumb */}
+          <div className="flex items-center text-sm text-gray-500">
+            <span>Home</span>
+            <span className="mx-2">/</span>
+            <span className="text-gray-900">Semua Kitchen</span>
+          </div>
+
+          {/* Results and Sort */}
+          <div className="flex justify-between items-center">
+            <p className="text-gray-600">{products.length} Ditemukan</p>
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-600">Sort by:</span>
+              <Select
+                value={sortOption}
+                onValueChange={(value) => setSortOption(value)}
+                items={[
+                  { value: "Featured", label: "Featured" },
+                  { value: "Newest", label: "Newest" },
+                  { value: "Price: Low to High", label: "Price: Low to High" },
+                  { value: "Price: High to Low", label: "Price: High to Low" },
+                ]}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Products Grid */}
+        <div className="mt-8">
+          <ProductGrid products={products} />
+        </div>
+      </div>
+
+      {/* Newsletter Section */}
+      <div className="bg-red-600 py-8 mt-16">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-between">
+            <div className="mb-4 md:mb-0">
+              <h3 className="text-white font-semibold">Newsletter</h3>
+              <p className="text-white text-sm">
+                Jadilah yang pertama mengetahui seputar diskon, penawaran dan event kami!
+              </p>
+            </div>
+            <div className="flex w-full md:w-auto">
+              <Input
+                type="email"
+                placeholder="Enter your email"
+                className="rounded-r-none"
+              />
+              <button className="px-6 py-2 bg-gray-900 text-white rounded-r">
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Footer />
     </div>
   );
 };
