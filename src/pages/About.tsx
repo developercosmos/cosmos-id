@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Corporate from "../components/about/Corporate";
@@ -35,7 +36,7 @@ const About = () => {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-      <div className="pt-16">
+      <div className="pt-20">
         <div className="bg-primary text-white py-8">
           <h1 className="text-3xl md:text-4xl font-bold text-center">About Us</h1>
         </div>

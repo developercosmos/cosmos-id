@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
@@ -31,14 +32,10 @@ const fetchSlides = async (): Promise<Slide[]> => {
   }
 
   return data.map(slide => {
-    // Handle image URL construction
     let imageUrl = slide.image;
     if (!imageUrl.startsWith('http')) {
-      // Remove any duplicate SERVER_URL if present
       imageUrl = imageUrl.replace(SERVER_URL, '');
-      // Ensure we have a clean path starting with /
       imageUrl = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
-      // Construct the full URL
       imageUrl = `${SERVER_URL}${imageUrl}`;
     }
     console.log('Processed image URL:', imageUrl);
@@ -98,7 +95,7 @@ const VideoSlider = () => {
   }
 
   return (
-    <div className="relative w-full h-[calc(100vh-5rem)] overflow-hidden">
+    <div className="relative w-full h-[calc(100vh)] overflow-hidden">
       {slides.map((slide, index) => (
         <div
           key={index}
