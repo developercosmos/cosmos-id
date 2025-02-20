@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import ProductDetail from "../ProductDetail";
 import { useState } from "react";
+import { SERVER_URL } from "../../config/serverConfig";
 
 interface ProductCardProps {
   product: Product;
@@ -22,7 +23,17 @@ const ProductCard = ({ product }: ProductCardProps) => {
     if (imageError || !product.images || !product.images[0]) {
       return getFallbackImage();
     }
-    return product.images[0];
+
+    const imageUrl = product.images[0];
+    
+    // If it's already a full URL, return it as is
+    if (imageUrl.startsWith('http')) {
+      return imageUrl;
+    }
+
+    // Clean the image URL to ensure it only contains the filename
+    const filename = imageUrl.split('/').pop();
+    return `${SERVER_URL}/public/uploads/${filename}`;
   };
 
   return (
@@ -42,7 +53,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       <div className="w-full h-[168px] pt-3 pb-2 px-6 flex flex-col justify-end gap-3">
         <div className="w-full h-[48px] flex flex-col items-start">
           <div className="w-full text-[#344054] text-[14px] font-normal leading-5 tracking-[0.14px]">
-            Nama Produk
+            {product.name}
           </div>
           <div className="w-full text-[#101828] text-[20px] font-semibold leading-7 tracking-[0.25px]">
             {product.price}
