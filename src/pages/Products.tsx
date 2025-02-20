@@ -48,59 +48,65 @@ const Products = () => {
   const products = kitchenProducts;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white relative">
       <Navbar />
       
-      {/* Hero Section */}
-      <div className="relative h-[400px] w-full">
+      {/* Hero Section - matches v79_197 and related classes */}
+      <div className="relative h-[560px] w-full mt-[120px]">
+        <div className="absolute inset-0 bg-[#D9D9D9]" /> {/* v85_501 */}
         <img 
           src="/lovable-uploads/06ea0975-8f44-4a43-b331-55edbc1b4ccb.png"
           alt="Kitchen Banner"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-          <h1 className="text-6xl font-bold text-white">Kitchen</h1>
+          <h1 className="text-[72px] font-normal text-white font-inter">Kitchen</h1>
         </div>
       </div>
 
-      {/* Breadcrumb and Results */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col space-y-4">
-          {/* Breadcrumb */}
-          <div className="flex items-center text-sm text-gray-500">
-            <span>Home</span>
-            <span className="mx-2">/</span>
-            <span className="text-gray-900">Semua Kitchen</span>
-          </div>
+      {/* Main Content Section - matches v82_328 */}
+      <div className="container mx-auto px-5 py-8 mt-[120px]">
+        {/* Breadcrumb - matches v89_828 */}
+        <div className="flex items-center text-sm mb-6">
+          <span className="text-[#344054] font-medium">Home</span>
+          <span className="mx-2 text-[#344054] font-medium">/</span>
+          <span className="text-[#98A2B3] font-medium">Semua Kitchen</span>
+        </div>
 
-          {/* Results and Sort */}
-          <div className="flex justify-between items-center">
-            <p className="text-gray-600">{products.length} Ditemukan</p>
-            <div className="flex items-center space-x-2">
-              <span className="text-gray-600">Sort by:</span>
-              <Select value={sortOption} onValueChange={setSortOption}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Featured">Featured</SelectItem>
-                  <SelectItem value="Newest">Newest</SelectItem>
-                  <SelectItem value="Price: Low to High">Price: Low to High</SelectItem>
-                  <SelectItem value="Price: High to Low">Price: High to Low</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        {/* Results and Sort Section - matches v83_498 */}
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-2xl font-semibold text-[#242C31]">{products.length} Ditemukan</h2>
+          <div className="flex items-center">
+            <span className="text-[#9AA6AC] mr-2">Sort by:</span>
+            <Select value={sortOption} onValueChange={setSortOption}>
+              <SelectTrigger className="w-[178px] bg-white border rounded-[6px] text-[#242C31]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Featured">Featured</SelectItem>
+                <SelectItem value="Newest">Newest</SelectItem>
+                <SelectItem value="Price: Low to High">Price: Low to High</SelectItem>
+                <SelectItem value="Price: High to Low">Price: High to Low</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         {/* Products Grid */}
-        <div className="mt-8">
+        <div className="mb-16">
           <ProductGrid products={products} />
+        </div>
+
+        {/* Load More Button - matches v109_982 */}
+        <div className="flex justify-center mb-16">
+          <button className="px-4 py-2 bg-white text-[#344054] font-medium text-sm border rounded-[6px] hover:bg-gray-50">
+            Load More Products
+          </button>
         </div>
       </div>
 
       {/* Newsletter Section */}
-      <div className="bg-red-600 py-8 mt-16">
+      <div className="bg-red-600 py-8">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="mb-4 md:mb-0">
