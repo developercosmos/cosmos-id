@@ -2,7 +2,7 @@
 // This file manages server configuration for the frontend
 
 // Base URL for the website (relative path)
-export const SERVER_URL = "http://localhost:8000"; // Adjust this to match your PHP server URL
+export const SERVER_URL = "http://192.168.1.15"; // Server IP address
 
 // Base URL for the API server
 export const API_URL = "https://api.cosmos.id"; // Change this to match your API server URL
