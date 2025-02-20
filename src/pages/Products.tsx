@@ -52,7 +52,7 @@ const Products = () => {
       <Navbar />
       
       {/* Hero Section - matches v79_197 and related classes */}
-      <div className="relative h-[560px] w-full mt-[120px]">
+      <div className="relative h-[560px] w-full">
         <div className="absolute inset-0 bg-[#D9D9D9]" /> {/* v85_501 */}
         <img 
           src="/lovable-uploads/06ea0975-8f44-4a43-b331-55edbc1b4ccb.png"
