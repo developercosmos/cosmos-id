@@ -9,8 +9,23 @@ CREATE TABLE IF NOT EXISTS events (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Add images column if it doesn't exist
-ALTER TABLE events ADD COLUMN IF NOT EXISTS images TEXT AFTER content;
+-- Check if images column exists before adding it
+SET @dbname = DATABASE();
+SET @tablename = "events";
+SET @columnname = "images";
+SET @preparedStatement = (SELECT IF(
+  (
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = @dbname
+      AND TABLE_NAME = @tablename
+      AND COLUMN_NAME = @columnname
+  ) > 0,
+  "SELECT 1",
+  "ALTER TABLE events ADD COLUMN images TEXT AFTER content"
+));
+PREPARE alterIfNotExists FROM @preparedStatement;
+EXECUTE alterIfNotExists;
+DEALLOCATE PREPARE alterIfNotExists;
 
 -- Modify content column to LONGTEXT if it exists
 ALTER TABLE events MODIFY COLUMN content LONGTEXT;
