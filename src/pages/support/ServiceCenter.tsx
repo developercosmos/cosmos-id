@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import { GoogleMap, useLoadScript, MarkerF as MarkerAdvanced, InfoWindowF } from "@react-google-maps/api";
@@ -22,49 +23,36 @@ const ServiceCenter = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [mapCenter, setMapCenter] = useState<google.maps.LatLngLiteral>({ lat: -2.5489, lng: 120.9842 });
-  const [googleMapsApiKey, setGoogleMapsApiKey] = useState("");
   const { toast } = useToast();
 
-  useEffect(() => {
-    const getApiKey = async () => {
-      try {
-        const configs = await fetchConfigurations();
-        console.log('Fetched configurations:', configs); // Debug log
-        if (configs.GOOGLE_MAPS_API_KEY) {
-          setGoogleMapsApiKey(configs.GOOGLE_MAPS_API_KEY);
-          console.log('Set Google Maps API Key'); // Debug log
-        } else {
-          console.error('Google Maps API key not found in configurations'); // Debug log
-          toast({
-            title: "Configuration Error",
-            description: "Google Maps API key not found in configuration",
-            variant: "destructive",
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching configurations:', error); // Debug log
-        toast({
-          title: "Error",
-          description: "Failed to load configuration",
-          variant: "destructive",
-        });
-      }
-    };
-    getApiKey();
-  }, [toast]);
-
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: googleMapsApiKey || "",
-    id: 'google-map-script', // Prevent multiple Google Maps JavaScript API loading
+  // Use React Query for fetching configurations
+  const { data: configs, isError: isConfigError } = useQuery({
+    queryKey: ['configurations'],
+    queryFn: fetchConfigurations,
+    retry: 2,
+    onError: (error) => {
+      console.error('Error fetching configurations:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load configuration",
+        variant: "destructive",
+      });
+    }
   });
 
-  const { data: serviceCenters, isError: isServiceCentersError } = useQuery({
+  const googleMapsApiKey = configs?.GOOGLE_MAPS_API_KEY || "";
+
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey,
+    id: 'google-map-script',
+  });
+
+  const { data: serviceCenters } = useQuery({
     queryKey: ['serviceCenters'],
     queryFn: async () => {
       const response = await fetch(`${SERVER_URL}/src/server/serviceCenter.php`);
       if (!response.ok) throw new Error('Failed to fetch service centers');
       const data = await response.json();
-      // Ensure latitude and longitude are numbers
       return data.map((center: any) => ({
         ...center,
         latitude: Number(center.latitude),
@@ -116,16 +104,16 @@ const ServiceCenter = () => {
     setMapCenter({ lat: center.latitude, lng: center.longitude });
   };
 
-  if (!googleMapsApiKey) {
+  if (isConfigError || !googleMapsApiKey) {
     return (
       <div className="min-h-screen bg-white">
         <Navbar />
         <div className="pt-20 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="p-4 border rounded-lg">
-              <h2 className="text-lg font-semibold mb-2">Loading Configuration...</h2>
+              <h2 className="text-lg font-semibold mb-2">Configuration Error</h2>
               <p className="text-sm text-gray-600">
-                Please wait while we load the map configuration.
+                Unable to load Google Maps configuration. Please try again later.
               </p>
             </div>
           </div>
@@ -189,59 +177,53 @@ const ServiceCenter = () => {
                 </Button>
               </div>
               <div className="h-[600px] rounded-lg overflow-hidden shadow-lg">
-                {googleMapsApiKey ? (
-                  <GoogleMap
-                    zoom={5}
-                    center={mapCenter}
-                    mapContainerClassName="w-full h-full"
-                    options={{
-                      streetViewControl: false,
-                      mapTypeControl: false,
-                      styles: [
-                        {
-                          featureType: "all",
-                          elementType: "geometry",
-                          stylers: [{ visibility: "simplified" }]
-                        }
-                      ]
-                    }}
-                  >
-                    {userLocation && (
-                      <MarkerAdvanced
-                        position={userLocation}
-                        icon={{
-                          url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF0000' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E",
-                          scaledSize: new google.maps.Size(16, 16),
-                        }}
-                      />
-                    )}
-                    
-                    {filteredCenters?.map((center) => (
-                      <MarkerAdvanced
-                        key={center.id}
-                        position={{ lat: center.latitude, lng: center.longitude }}
-                        onClick={() => setSelectedCenter(center)}
-                      >
-                        {selectedCenter?.id === center.id && (
-                          <InfoWindowF
-                            position={{ lat: center.latitude, lng: center.longitude }}
-                            onCloseClick={() => setSelectedCenter(null)}
-                          >
-                            <div>
-                              <h3 className="font-bold">{center.name}</h3>
-                              <p className="text-sm">{center.address}</p>
-                              <p className="text-sm">Phone: {center.phone}</p>
-                            </div>
-                          </InfoWindowF>
-                        )}
-                      </MarkerAdvanced>
-                    ))}
-                  </GoogleMap>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                    <p>Loading Google Maps...</p>
-                  </div>
-                )}
+                <GoogleMap
+                  zoom={5}
+                  center={mapCenter}
+                  mapContainerClassName="w-full h-full"
+                  options={{
+                    streetViewControl: false,
+                    mapTypeControl: false,
+                    styles: [
+                      {
+                        featureType: "all",
+                        elementType: "geometry",
+                        stylers: [{ visibility: "simplified" }]
+                      }
+                    ]
+                  }}
+                >
+                  {userLocation && (
+                    <MarkerAdvanced
+                      position={userLocation}
+                      icon={{
+                        url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF0000' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E",
+                        scaledSize: new google.maps.Size(16, 16),
+                      }}
+                    />
+                  )}
+                  
+                  {filteredCenters?.map((center) => (
+                    <MarkerAdvanced
+                      key={center.id}
+                      position={{ lat: center.latitude, lng: center.longitude }}
+                      onClick={() => setSelectedCenter(center)}
+                    >
+                      {selectedCenter?.id === center.id && (
+                        <InfoWindowF
+                          position={{ lat: center.latitude, lng: center.longitude }}
+                          onCloseClick={() => setSelectedCenter(null)}
+                        >
+                          <div>
+                            <h3 className="font-bold">{center.name}</h3>
+                            <p className="text-sm">{center.address}</p>
+                            <p className="text-sm">Phone: {center.phone}</p>
+                          </div>
+                        </InfoWindowF>
+                      )}
+                    </MarkerAdvanced>
+                  ))}
+                </GoogleMap>
               </div>
             </div>
             <div className="space-y-4">
