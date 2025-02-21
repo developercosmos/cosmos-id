@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Navbar from "../../components/Navbar";
 import { GoogleMap, useLoadScript, MarkerF as MarkerAdvanced, InfoWindowF } from "@react-google-maps/api";
 import { SERVER_URL, fetchConfigurations } from "@/config/serverConfig";
@@ -17,21 +17,23 @@ interface ServiceCenter {
   longitude: number;
 }
 
+const DEFAULT_ZOOM = 5;
+const FOCUSED_ZOOM = 15;
+
 const ServiceCenter = () => {
   const [selectedCenter, setSelectedCenter] = useState<ServiceCenter | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [mapCenter, setMapCenter] = useState<google.maps.LatLngLiteral>({ lat: -2.5489, lng: 120.9842 });
+  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
   const { toast } = useToast();
 
-  // Use React Query for fetching configurations
   const { data: configs, isError: isConfigError } = useQuery({
     queryKey: ['configurations'],
     queryFn: fetchConfigurations,
     retry: 2,
   });
 
-  // Show error toast if configuration fetch fails
   useEffect(() => {
     if (isConfigError) {
       toast({
@@ -44,14 +46,12 @@ const ServiceCenter = () => {
 
   const googleMapsApiKey = configs?.GOOGLE_MAPS_API_KEY || "";
 
-  // Load Google Maps script with API key
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: googleMapsApiKey,
-    libraries: ['places'], // Add required libraries
+    libraries: ['places'],
     id: 'google-map-script',
   });
 
-  // Query for service centers
   const { data: serviceCenters } = useQuery({
     queryKey: ['serviceCenters'],
     queryFn: async () => {
@@ -64,14 +64,52 @@ const ServiceCenter = () => {
         longitude: Number(center.longitude)
       })) as ServiceCenter[];
     },
-    enabled: !!googleMapsApiKey, // Only fetch when we have the API key
+    enabled: !!googleMapsApiKey,
   });
 
-  // Filter service centers based on search query
   const filteredCenters = serviceCenters?.filter(center => 
     center.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     center.address.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // Radius of the earth in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Distance in km
+  };
+
+  const findNearestCenter = useCallback((location: google.maps.LatLngLiteral) => {
+    if (!serviceCenters?.length) return null;
+
+    let nearest = serviceCenters[0];
+    let minDistance = calculateDistance(
+      location.lat,
+      location.lng,
+      nearest.latitude,
+      nearest.longitude
+    );
+
+    serviceCenters.forEach(center => {
+      const distance = calculateDistance(
+        location.lat,
+        location.lng,
+        center.latitude,
+        center.longitude
+      );
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearest = center;
+      }
+    });
+
+    return { center: nearest, distance: minDistance };
+  }, [serviceCenters]);
 
   const detectUserLocation = () => {
     if ("geolocation" in navigator) {
@@ -82,11 +120,24 @@ const ServiceCenter = () => {
             lng: position.coords.longitude
           };
           setUserLocation(location);
-          setMapCenter(location);
-          toast({
-            title: "Location detected",
-            description: "Map has been centered to your location",
-          });
+          
+          const nearest = findNearestCenter(location);
+          if (nearest) {
+            setSelectedCenter(nearest.center);
+            setMapCenter({ lat: nearest.center.latitude, lng: nearest.center.longitude });
+            setZoom(FOCUSED_ZOOM);
+            toast({
+              title: "Location detected",
+              description: `Found nearest service center: ${nearest.center.name} (${nearest.distance.toFixed(1)} km away)`,
+            });
+          } else {
+            setMapCenter(location);
+            toast({
+              title: "Location detected",
+              description: "No service centers found nearby",
+              variant: "destructive",
+            });
+          }
         },
         (error) => {
           toast({
@@ -108,6 +159,7 @@ const ServiceCenter = () => {
   const handleCenterSelect = (center: ServiceCenter) => {
     setSelectedCenter(center);
     setMapCenter({ lat: center.latitude, lng: center.longitude });
+    setZoom(FOCUSED_ZOOM);
   };
 
   if (!googleMapsApiKey) {
@@ -167,7 +219,7 @@ const ServiceCenter = () => {
               <div className="h-[600px] rounded-lg overflow-hidden shadow-lg">
                 {googleMapsApiKey && isLoaded ? (
                   <GoogleMap
-                    zoom={5}
+                    zoom={zoom}
                     center={mapCenter}
                     mapContainerClassName="w-full h-full"
                     options={{
@@ -196,7 +248,7 @@ const ServiceCenter = () => {
                       <MarkerAdvanced
                         key={center.id}
                         position={{ lat: center.latitude, lng: center.longitude }}
-                        onClick={() => setSelectedCenter(center)}
+                        onClick={() => handleCenterSelect(center)}
                       >
                         {selectedCenter?.id === center.id && (
                           <InfoWindowF
