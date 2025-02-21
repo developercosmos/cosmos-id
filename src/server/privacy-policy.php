@@ -13,7 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$database", $username, $password);
+    // Use the global database connection variables from config.php
+    $pdo = new PDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Create table if not exists
@@ -42,17 +43,22 @@ try {
         }
 
         $stmt->execute([$content]);
-        echo json_encode(['success' => true]);
+        echo json_encode(['success' => true, 'content' => $content]);
     }
     // Handle GET request to fetch privacy policy
     else if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $stmt = $pdo->prepare("SELECT content FROM privacy_policy ORDER BY updated_at DESC LIMIT 1");
         $stmt->execute();
         $content = $stmt->fetchColumn();
-        echo json_encode(['content' => $content ?: '']);
+        
+        if ($content === false) {
+            echo json_encode(['content' => '']);
+        } else {
+            echo json_encode(['content' => $content]);
+        }
     }
 } catch (PDOException $e) {
-    error_log("Database error: " . $e->getMessage());
+    error_log("Database error in privacy-policy.php: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['error' => 'Database error occurred']);
+    echo json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
 }

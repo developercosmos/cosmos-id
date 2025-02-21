@@ -14,21 +14,30 @@ const PrivacyPolicyManager = () => {
   const queryClient = useQueryClient();
 
   // Fetch current privacy policy
-  const { data: privacyPolicy, isLoading, isError } = useQuery({
+  const { data: privacyPolicy, isLoading, isError, error } = useQuery({
     queryKey: ['privacyPolicy'],
     queryFn: async () => {
-      const response = await fetch(`${SERVER_URL}/src/server/privacy-policy.php`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch privacy policy');
+      try {
+        const response = await fetch(`${SERVER_URL}/src/server/privacy-policy.php`);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Privacy policy fetch error:", errorText);
+          throw new Error(`Failed to fetch privacy policy: ${errorText}`);
+        }
+        const data = await response.json();
+        console.log("Fetched privacy policy:", data);
+        return data.content;
+      } catch (err) {
+        console.error("Privacy policy fetch error:", err);
+        throw err;
       }
-      const data = await response.json();
-      return data.content;
     },
   });
 
   // Update content when privacy policy data changes
   useEffect(() => {
-    if (privacyPolicy) {
+    if (privacyPolicy !== undefined) {
+      console.log("Setting content from privacy policy:", privacyPolicy);
       setContent(privacyPolicy);
     }
   }, [privacyPolicy]);
@@ -51,7 +60,9 @@ const PrivacyPolicyManager = () => {
         throw new Error('Failed to update privacy policy');
       }
       
-      return response.json();
+      const result = await response.json();
+      console.log("Update response:", result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['privacyPolicy'] });
@@ -89,7 +100,9 @@ const PrivacyPolicyManager = () => {
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-red-500">Failed to load privacy policy</div>
+          <div className="text-red-500">
+            Failed to load privacy policy: {error instanceof Error ? error.message : 'Unknown error'}
+          </div>
         </CardContent>
       </Card>
     );
@@ -108,6 +121,7 @@ const PrivacyPolicyManager = () => {
           </Button>
         </div>
         <EventContentEditor
+          key={privacyPolicy || 'empty'} // Force re-render when content changes
           initialContent={privacyPolicy || ''}
           onChange={setContent}
         />
