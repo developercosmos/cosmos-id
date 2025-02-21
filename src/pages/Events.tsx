@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Event } from "../types/event";
 import { SERVER_URL } from "../config/serverConfig";
 import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { isPast } from "date-fns";
 import EventsTabContent from "@/components/events/EventsTabContent";
@@ -62,7 +61,6 @@ const Events = () => {
           />
         </Tabs>
       </div>
-      <Footer />
     </div>
   );
 };

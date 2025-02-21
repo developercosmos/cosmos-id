@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import About from "./pages/About";
@@ -18,30 +19,34 @@ import Footer from "./components/Footer";
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/events" element={<Events />} />
-        <Route path="/events/:id" element={<EventDetail />} />
-        <Route path="/support" element={<Support />} />
-        <Route path="/support/contact" element={<Contact />} />
-        <Route path="/support/faq" element={<FAQ />} />
-        <Route path="/support/service-center" element={<ServiceCenter />} />
-        <Route 
-          path="/admin" 
-          element={
-            <ProtectedRoute 
-              element={<Admin />} 
-              allowedRoles={['superuser', 'admin', 'operator']} 
+      <div className="flex flex-col min-h-screen">
+        <div className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/events/:id" element={<EventDetail />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/support/contact" element={<Contact />} />
+            <Route path="/support/faq" element={<FAQ />} />
+            <Route path="/support/service-center" element={<ServiceCenter />} />
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute 
+                  element={<Admin />} 
+                  allowedRoles={['superuser', 'admin', 'operator']} 
+                />
+              } 
             />
-          } 
-        />
-        <Route path="/login" element={<Login />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <Footer />
+            <Route path="/login" element={<Login />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </div>
+        <Footer />
+      </div>
     </Router>
   );
 }
