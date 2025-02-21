@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import { GoogleMap, useLoadScript, MarkerF as MarkerAdvanced, InfoWindowF } from "@react-google-maps/api";
@@ -45,11 +44,14 @@ const ServiceCenter = () => {
 
   const googleMapsApiKey = configs?.GOOGLE_MAPS_API_KEY || "";
 
+  // Load Google Maps script with API key
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey,
+    googleMapsApiKey: googleMapsApiKey,
+    libraries: ['places'], // Add required libraries
     id: 'google-map-script',
   });
 
+  // Query for service centers
   const { data: serviceCenters } = useQuery({
     queryKey: ['serviceCenters'],
     queryFn: async () => {
@@ -62,9 +64,10 @@ const ServiceCenter = () => {
         longitude: Number(center.longitude)
       })) as ServiceCenter[];
     },
-    enabled: !!googleMapsApiKey,
+    enabled: !!googleMapsApiKey, // Only fetch when we have the API key
   });
 
+  // Filter service centers based on search query
   const filteredCenters = serviceCenters?.filter(center => 
     center.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     center.address.toLowerCase().includes(searchQuery.toLowerCase())
@@ -107,16 +110,16 @@ const ServiceCenter = () => {
     setMapCenter({ lat: center.latitude, lng: center.longitude });
   };
 
-  if (isConfigError || !googleMapsApiKey) {
+  if (!googleMapsApiKey) {
     return (
       <div className="min-h-screen bg-white">
         <Navbar />
         <div className="pt-20 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="p-4 border rounded-lg">
-              <h2 className="text-lg font-semibold mb-2">Configuration Error</h2>
+              <h2 className="text-lg font-semibold mb-2">Loading Configuration...</h2>
               <p className="text-sm text-gray-600">
-                Unable to load Google Maps configuration. Please try again later.
+                Please wait while we load the map configuration.
               </p>
             </div>
           </div>
@@ -135,24 +138,6 @@ const ServiceCenter = () => {
               <h2 className="text-lg font-semibold mb-2 text-red-600">Error Loading Maps</h2>
               <p className="text-sm text-red-600">
                 There was an error loading Google Maps. Please try again later.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-white">
-        <Navbar />
-        <div className="pt-20 px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="p-4 border rounded-lg">
-              <h2 className="text-lg font-semibold mb-2">Loading Map...</h2>
-              <p className="text-sm text-gray-600">
-                Please wait while we load the service center locations.
               </p>
             </div>
           </div>
@@ -180,53 +165,59 @@ const ServiceCenter = () => {
                 </Button>
               </div>
               <div className="h-[600px] rounded-lg overflow-hidden shadow-lg">
-                <GoogleMap
-                  zoom={5}
-                  center={mapCenter}
-                  mapContainerClassName="w-full h-full"
-                  options={{
-                    streetViewControl: false,
-                    mapTypeControl: false,
-                    styles: [
-                      {
-                        featureType: "all",
-                        elementType: "geometry",
-                        stylers: [{ visibility: "simplified" }]
-                      }
-                    ]
-                  }}
-                >
-                  {userLocation && (
-                    <MarkerAdvanced
-                      position={userLocation}
-                      icon={{
-                        url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF0000' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E",
-                        scaledSize: new google.maps.Size(16, 16),
-                      }}
-                    />
-                  )}
-                  
-                  {serviceCenters?.map((center) => (
-                    <MarkerAdvanced
-                      key={center.id}
-                      position={{ lat: center.latitude, lng: center.longitude }}
-                      onClick={() => setSelectedCenter(center)}
-                    >
-                      {selectedCenter?.id === center.id && (
-                        <InfoWindowF
-                          position={{ lat: center.latitude, lng: center.longitude }}
-                          onCloseClick={() => setSelectedCenter(null)}
-                        >
-                          <div>
-                            <h3 className="font-bold">{center.name}</h3>
-                            <p className="text-sm">{center.address}</p>
-                            <p className="text-sm">Phone: {center.phone}</p>
-                          </div>
-                        </InfoWindowF>
-                      )}
-                    </MarkerAdvanced>
-                  ))}
-                </GoogleMap>
+                {googleMapsApiKey && isLoaded ? (
+                  <GoogleMap
+                    zoom={5}
+                    center={mapCenter}
+                    mapContainerClassName="w-full h-full"
+                    options={{
+                      streetViewControl: false,
+                      mapTypeControl: false,
+                      styles: [
+                        {
+                          featureType: "all",
+                          elementType: "geometry",
+                          stylers: [{ visibility: "simplified" }]
+                        }
+                      ]
+                    }}
+                  >
+                    {userLocation && (
+                      <MarkerAdvanced
+                        position={userLocation}
+                        icon={{
+                          url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF0000' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E",
+                          scaledSize: new google.maps.Size(16, 16),
+                        }}
+                      />
+                    )}
+                    
+                    {filteredCenters?.map((center) => (
+                      <MarkerAdvanced
+                        key={center.id}
+                        position={{ lat: center.latitude, lng: center.longitude }}
+                        onClick={() => setSelectedCenter(center)}
+                      >
+                        {selectedCenter?.id === center.id && (
+                          <InfoWindowF
+                            position={{ lat: center.latitude, lng: center.longitude }}
+                            onCloseClick={() => setSelectedCenter(null)}
+                          >
+                            <div>
+                              <h3 className="font-bold">{center.name}</h3>
+                              <p className="text-sm">{center.address}</p>
+                              <p className="text-sm">Phone: {center.phone}</p>
+                            </div>
+                          </InfoWindowF>
+                        )}
+                      </MarkerAdvanced>
+                    ))}
+                  </GoogleMap>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                    <p>Loading Google Maps...</p>
+                  </div>
+                )}
               </div>
             </div>
             <div className="space-y-4">
@@ -240,7 +231,7 @@ const ServiceCenter = () => {
                 />
               </div>
               <div className="space-y-4 max-h-[540px] overflow-y-auto">
-                {serviceCenters?.map((center) => (
+                {filteredCenters?.map((center) => (
                   <div
                     key={center.id}
                     className={`p-4 border rounded-lg hover:border-primary transition-colors cursor-pointer ${
