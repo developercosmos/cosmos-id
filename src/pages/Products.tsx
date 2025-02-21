@@ -4,7 +4,6 @@ import Navbar from "../components/Navbar";
 import { useToast } from "../components/ui/use-toast";
 import { Product, getProductsByCategory } from "../services/productService";
 import ProductGrid from "../components/products/ProductGrid";
-import Footer from "../components/Footer";
 import { Input } from "../components/ui/input";
 import { 
   Select,
@@ -51,9 +50,9 @@ const Products = () => {
     <div className="min-h-screen bg-white relative">
       <Navbar />
       
-      {/* Hero Section - matches v79_197 and related classes */}
+      {/* Hero Section */}
       <div className="relative h-[560px] w-full">
-        <div className="absolute inset-0 bg-[#D9D9D9]" /> {/* v85_501 */}
+        <div className="absolute inset-0 bg-[#D9D9D9]" />
         <img 
           src="/lovable-uploads/06ea0975-8f44-4a43-b331-55edbc1b4ccb.png"
           alt="Kitchen Banner"
@@ -64,16 +63,16 @@ const Products = () => {
         </div>
       </div>
 
-      {/* Main Content Section - matches v82_328 */}
+      {/* Main Content Section */}
       <div className="container mx-auto px-5 py-8 mt-[120px]">
-        {/* Breadcrumb - matches v89_828 */}
+        {/* Breadcrumb */}
         <div className="flex items-center text-sm mb-6">
           <span className="text-[#344054] font-medium">Home</span>
           <span className="mx-2 text-[#344054] font-medium">/</span>
           <span className="text-[#98A2B3] font-medium">Semua Kitchen</span>
         </div>
 
-        {/* Results and Sort Section - matches v83_498 */}
+        {/* Results and Sort Section */}
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-semibold text-[#242C31]">{products.length} Ditemukan</h2>
           <div className="flex items-center">
@@ -97,7 +96,7 @@ const Products = () => {
           <ProductGrid products={products} />
         </div>
 
-        {/* Load More Button - matches v109_982 */}
+        {/* Load More Button */}
         <div className="flex justify-center mb-16">
           <button className="px-4 py-2 bg-white text-[#344054] font-medium text-sm border rounded-[6px] hover:bg-gray-50">
             Load More Products
@@ -128,8 +127,6 @@ const Products = () => {
           </div>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 };
