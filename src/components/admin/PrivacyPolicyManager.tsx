@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { SERVER_URL } from "@/config/serverConfig";
 import { Button } from "@/components/ui/button";
@@ -23,10 +23,14 @@ const PrivacyPolicyManager = () => {
       const data = await response.json();
       return data.content;
     },
-    onSuccess: (data) => {
-      setContent(data || '');
-    },
   });
+
+  // Update content when privacy policy data changes
+  useEffect(() => {
+    if (privacyPolicy) {
+      setContent(privacyPolicy);
+    }
+  }, [privacyPolicy]);
 
   // Update privacy policy mutation
   const updatePrivacyPolicy = useMutation({
