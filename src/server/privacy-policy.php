@@ -7,9 +7,23 @@ header("Content-Type: application/json");
 
 require_once 'config.php';
 
+// Handle OPTIONS request for CORS
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(0);
+}
+
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$database", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Create table if not exists
+    $sql = "CREATE TABLE IF NOT EXISTS privacy_policy (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        content TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )";
+    $pdo->exec($sql);
 
     // Handle POST request to update privacy policy
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -22,9 +36,9 @@ try {
         $exists = $stmt->fetchColumn() > 0;
 
         if ($exists) {
-            $stmt = $pdo->prepare("UPDATE privacy_policy SET content = ?, updated_at = NOW()");
+            $stmt = $pdo->prepare("UPDATE privacy_policy SET content = ?");
         } else {
-            $stmt = $pdo->prepare("INSERT INTO privacy_policy (content, created_at, updated_at) VALUES (?, NOW(), NOW())");
+            $stmt = $pdo->prepare("INSERT INTO privacy_policy (content) VALUES (?)");
         }
 
         $stmt->execute([$content]);
@@ -35,9 +49,10 @@ try {
         $stmt = $pdo->prepare("SELECT content FROM privacy_policy ORDER BY updated_at DESC LIMIT 1");
         $stmt->execute();
         $content = $stmt->fetchColumn();
-        echo json_encode(['success' => true, 'content' => $content ?: '']);
+        echo json_encode(['content' => $content ?: '']);
     }
 } catch (PDOException $e) {
+    error_log("Database error: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+    echo json_encode(['error' => 'Database error occurred']);
 }
