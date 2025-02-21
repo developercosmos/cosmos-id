@@ -8,6 +8,7 @@ import UserManagement from "../../pages/admin/UserManagement";
 import ServiceCenterManager from "./ServiceCenterManager";
 import PrivacyPolicyManager from "./PrivacyPolicyManager";
 import SocialMediaManager from "./SocialMediaManager";
+import WebsiteSettingsManager from "./WebsiteSettingsManager";
 
 interface AdminContentProps {
   activeTab: string;
@@ -47,6 +48,10 @@ const AdminContent = ({ activeTab }: AdminContentProps) => {
 
         <TabsContent value="social-media">
           <SocialMediaManager />
+        </TabsContent>
+
+        <TabsContent value="settings">
+          <WebsiteSettingsManager />
         </TabsContent>
       </Tabs>
     </div>
