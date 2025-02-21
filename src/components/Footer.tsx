@@ -2,8 +2,19 @@
 import { Link } from "react-router-dom";
 import { Instagram, Linkedin, Facebook, Twitter, Youtube, MessageCircle, Music2 } from "lucide-react";
 import { Separator } from "./ui/separator";
+import { useQuery } from "@tanstack/react-query";
+import { SERVER_URL } from "@/config/serverConfig";
 
 const Footer = () => {
+  const { data: socialLinks } = useQuery({
+    queryKey: ['socialLinks'],
+    queryFn: async () => {
+      const response = await fetch(`${SERVER_URL}/src/server/social-links.php`);
+      if (!response.ok) throw new Error('Failed to fetch social media links');
+      return response.json();
+    },
+  });
+
   const footerLinks = {
     product: {
       title: "Product",
@@ -73,25 +84,25 @@ const Footer = () => {
             <div>
               <h3 className="font-semibold mb-2 text-sm">Kunjungi Media Sosial Kami</h3>
               <div className="flex gap-3">
-                <a href="#" className="text-gray-600 hover:text-primary">
+                <a href={socialLinks?.instagram || "#"} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-primary">
                   <Instagram className="h-4 w-4" />
                 </a>
-                <a href="#" className="text-gray-600 hover:text-primary">
+                <a href={socialLinks?.linkedin || "#"} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-primary">
                   <Linkedin className="h-4 w-4" />
                 </a>
-                <a href="#" className="text-gray-600 hover:text-primary">
+                <a href={socialLinks?.facebook || "#"} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-primary">
                   <Facebook className="h-4 w-4" />
                 </a>
-                <a href="#" className="text-gray-600 hover:text-primary">
+                <a href={socialLinks?.twitter || "#"} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-primary">
                   <Twitter className="h-4 w-4" />
                 </a>
-                <a href="#" className="text-gray-600 hover:text-primary">
+                <a href={socialLinks?.youtube || "#"} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-primary">
                   <Youtube className="h-4 w-4" />
                 </a>
-                <a href="#" className="text-gray-600 hover:text-primary">
+                <a href={socialLinks?.line || "#"} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-primary">
                   <MessageCircle className="h-4 w-4" />
                 </a>
-                <a href="#" className="text-gray-600 hover:text-primary">
+                <a href={socialLinks?.tiktok || "#"} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-primary">
                   <Music2 className="h-4 w-4" />
                 </a>
               </div>

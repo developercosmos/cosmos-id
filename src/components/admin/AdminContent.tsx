@@ -7,6 +7,7 @@ import SlideManager from "./SlideManager";
 import UserManagement from "../../pages/admin/UserManagement";
 import ServiceCenterManager from "./ServiceCenterManager";
 import PrivacyPolicyManager from "./PrivacyPolicyManager";
+import SocialMediaManager from "./SocialMediaManager";
 
 interface AdminContentProps {
   activeTab: string;
@@ -42,6 +43,10 @@ const AdminContent = ({ activeTab }: AdminContentProps) => {
 
         <TabsContent value="privacy-policy">
           <PrivacyPolicyManager />
+        </TabsContent>
+
+        <TabsContent value="social-media">
+          <SocialMediaManager />
         </TabsContent>
       </Tabs>
     </div>
