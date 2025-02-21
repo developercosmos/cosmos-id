@@ -1,3 +1,4 @@
+
 CREATE TABLE IF NOT EXISTS events (
   id INT AUTO_INCREMENT PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
@@ -33,3 +34,13 @@ CREATE TABLE IF NOT EXISTS configurations (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+-- Insert social media configurations if they don't exist
+INSERT IGNORE INTO configurations (config_key, config_value, description) VALUES
+('social_media_instagram', '', 'Instagram profile URL'),
+('social_media_linkedin', '', 'LinkedIn profile URL'),
+('social_media_facebook', '', 'Facebook page URL'),
+('social_media_twitter', '', 'Twitter profile URL'),
+('social_media_youtube', '', 'YouTube channel URL'),
+('social_media_line', '', 'Line account URL'),
+('social_media_tiktok', '', 'TikTok profile URL');
