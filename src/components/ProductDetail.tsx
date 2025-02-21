@@ -50,12 +50,12 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
 
       <div className="flex gap-8">
         {/* Left side - Images */}
-        <div className="w-[580px] flex flex-col gap-3">
-          <div className="h-[468px] bg-[#D9D9D9] rounded-xl overflow-hidden">
+        <div className="w-[42%] flex flex-col gap-3">
+          <div className="aspect-[4/3] bg-[#D9D9D9] rounded-xl overflow-hidden">
             <img
               src={getImageUrl(product.images[selectedImage])}
               alt={product.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
               onError={() => handleImageError(product.images[selectedImage])}
             />
           </div>
@@ -63,7 +63,7 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
             {product.images.map((image, index) => (
               <button
                 key={index}
-                className={`w-[135px] aspect-square bg-[#D9D9D9] rounded-lg overflow-hidden transition-all flex-shrink-0 ${
+                className={`w-[90px] aspect-square bg-[#D9D9D9] rounded-lg overflow-hidden transition-all flex-shrink-0 ${
                   selectedImage === index ? 'border-2 border-[#18181B] ring-1 ring-[#18181B]' : 'hover:opacity-80'
                 }`}
                 onClick={() => setSelectedImage(index)}
@@ -71,7 +71,7 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
                 <img
                   src={getImageUrl(image)}
                   alt={`${product.name} ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   onError={() => handleImageError(image)}
                 />
               </button>
