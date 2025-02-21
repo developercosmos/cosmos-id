@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { Instagram, Linkedin, Facebook, Twitter, Youtube, Whatsapp, Music2 } from "lucide-react";
+import { Instagram, Linkedin, Facebook, Twitter, Youtube, MessageSquare, Music2 } from "lucide-react";
 import { Separator } from "./ui/separator";
 import { useQuery } from "@tanstack/react-query";
 import { SERVER_URL } from "@/config/serverConfig";
@@ -100,7 +100,7 @@ const Footer = () => {
                   <Youtube className="h-4 w-4" />
                 </a>
                 <a href={socialLinks?.whatsapp || "#"} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-primary">
-                  <Whatsapp className="h-4 w-4" />
+                  <MessageSquare className="h-4 w-4" />
                 </a>
                 <a href={socialLinks?.tiktok || "#"} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-primary">
                   <Music2 className="h-4 w-4" />
