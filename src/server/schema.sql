@@ -42,5 +42,5 @@ INSERT IGNORE INTO configurations (config_key, config_value, description) VALUES
 ('social_media_facebook', '', 'Facebook page URL'),
 ('social_media_twitter', '', 'Twitter profile URL'),
 ('social_media_youtube', '', 'YouTube channel URL'),
-('social_media_line', '', 'Line account URL'),
+('social_media_whatsapp', '', 'WhatsApp contact URL'),
 ('social_media_tiktok', '', 'TikTok profile URL');

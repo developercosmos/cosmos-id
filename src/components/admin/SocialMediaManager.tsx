@@ -75,7 +75,7 @@ const SocialMediaManager = () => {
     { name: 'facebook', label: 'Facebook' },
     { name: 'twitter', label: 'Twitter' },
     { name: 'youtube', label: 'YouTube' },
-    { name: 'line', label: 'Line' },
+    { name: 'whatsapp', label: 'WhatsApp' },
     { name: 'tiktok', label: 'TikTok' },
   ];
 
