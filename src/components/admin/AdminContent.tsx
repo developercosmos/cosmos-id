@@ -6,6 +6,7 @@ import EventsManager from "./EventsManager";
 import SlideManager from "./SlideManager";
 import UserManagement from "../../pages/admin/UserManagement";
 import ServiceCenterManager from "./ServiceCenterManager";
+import PrivacyPolicyManager from "./PrivacyPolicyManager";
 
 interface AdminContentProps {
   activeTab: string;
@@ -38,10 +39,13 @@ const AdminContent = ({ activeTab }: AdminContentProps) => {
         <TabsContent value="service-centers">
           <ServiceCenterManager />
         </TabsContent>
+
+        <TabsContent value="privacy-policy">
+          <PrivacyPolicyManager />
+        </TabsContent>
       </Tabs>
     </div>
   );
 };
 
 export default AdminContent;
-
