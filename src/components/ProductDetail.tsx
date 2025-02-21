@@ -1,99 +1,121 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "./ui/button";
-import { FileDown } from "lucide-react";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+
+import { Product } from "../types/product";
+import { X } from "lucide-react";
+import { DialogClose } from "./ui/dialog";
+import { useState } from "react";
+import { SERVER_URL } from "../config/serverConfig";
 
 interface ProductDetailProps {
-  product: {
-    name: string;
-    description: string;
-    features: string[];
-    whatsInTheBox: string[];
-    warranty: string;
-    manual: string;
-    images: string[];
-  };
+  product: Product;
 }
 
 const ProductDetail = ({ product }: ProductDetailProps) => {
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [imageError, setImageError] = useState(false);
+
+  const getFallbackImage = () => {
+    return "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=500";
+  };
+
+  const getImageUrl = (imageUrl: string) => {
+    if (imageError || !imageUrl) {
+      return getFallbackImage();
+    }
+    
+    // If it's already a full URL, return it as is
+    if (imageUrl.startsWith('http')) {
+      return imageUrl;
+    }
+
+    // Clean the image URL to ensure it only contains the filename
+    const filename = imageUrl.split('/').pop();
+    return `${SERVER_URL}/public/uploads/${filename}`;
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      {product.images && product.images.length > 0 && (
-        <div className="mb-8">
-          <Carousel className="w-full max-w-xl mx-auto">
-            <CarouselContent>
-              {product.images.map((image, index) => (
-                <CarouselItem key={index}>
-                  <div className="p-1">
-                    <div className="aspect-square relative overflow-hidden rounded-xl">
-                      <img
-                        src={image}
-                        alt={`${product.name} - Image ${index + 1}`}
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
-          </Carousel>
+    <div className="w-[1024px] pt-6 pb-14 px-8 pr-6 bg-white rounded-3xl">
+      <div className="flex justify-end">
+        <DialogClose className="relative">
+          <X className="w-8 h-8 text-[#101828]" />
+        </DialogClose>
+      </div>
+
+      <div className="flex gap-8">
+        {/* Left side - Images */}
+        <div className="flex-1 flex flex-col gap-3">
+          <div className="h-[468px] bg-[#D9D9D9] rounded-xl overflow-hidden">
+            <img
+              src={getImageUrl(product.images[selectedImage])}
+              alt={product.name}
+              className="w-full h-full object-cover"
+              onError={() => setImageError(true)}
+            />
+          </div>
+          <div className="flex gap-3">
+            {product.images.map((image, index) => (
+              <button
+                key={index}
+                className={`flex-1 h-[108px] bg-[#D9D9D9] rounded-lg overflow-hidden ${
+                  selectedImage === index ? 'border-2 border-[#18181B]' : ''
+                }`}
+                onClick={() => setSelectedImage(index)}
+              >
+                <img
+                  src={getImageUrl(image)}
+                  alt={`${product.name} ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  onError={() => setImageError(true)}
+                />
+              </button>
+            ))}
+          </div>
         </div>
-      )}
 
-      <h1 className="text-3xl font-bold mb-6">{product.name}</h1>
-      <p className="text-gray-600 mb-8">{product.description}</p>
+        {/* Right side - Product Details */}
+        <div className="flex-1 flex flex-col gap-4">
+          <div className="h-9">
+            <h2 className="text-[32px] text-[#101828] font-semibold leading-9 tracking-[0.6px]">
+              {product.name}
+            </h2>
+          </div>
 
-      <Tabs defaultValue="features" className="w-full">
-        <TabsList>
-          <TabsTrigger value="features">Features</TabsTrigger>
-          <TabsTrigger value="whatsInTheBox">What's in the box</TabsTrigger>
-          <TabsTrigger value="warranty">Warranty</TabsTrigger>
-          <TabsTrigger value="manual">Manual</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="features">
-          <ul className="list-disc pl-6 space-y-2">
+          {/* Features */}
+          <div className="p-4 bg-[#F7F7F7] flex flex-col gap-3">
             {product.features.map((feature, index) => (
-              <li key={index} className="text-gray-700">{feature}</li>
+              <div key={index} className="flex gap-1">
+                <span className="text-[#344054] text-sm">•</span>
+                <span className="flex-1 text-[#344054] text-sm leading-5 tracking-[0.14px]">
+                  {feature}
+                </span>
+              </div>
             ))}
-          </ul>
-        </TabsContent>
+          </div>
 
-        <TabsContent value="whatsInTheBox">
-          <ul className="list-disc pl-6 space-y-2">
+          {/* What's in the Box */}
+          <div className="p-4 pt-3 pb-3 bg-[#F7F7F7] flex flex-col">
             {product.whatsInTheBox.map((item, index) => (
-              <li key={index} className="text-gray-700">{item}</li>
+              <div 
+                key={index}
+                className="py-2 flex gap-1 border-b border-black last:border-b-0"
+              >
+                <span className="w-[136px] text-[#344054] text-sm leading-5 tracking-[0.14px]">
+                  {item.split(':')[0]}
+                </span>
+                <span className="text-[#101828] text-sm font-bold leading-5 tracking-[0.14px]">
+                  {item.split(':')[1]}
+                </span>
+              </div>
             ))}
-          </ul>
-        </TabsContent>
-
-        <TabsContent value="warranty">
-          <div className="prose max-w-none">
-            {product.warranty}
           </div>
-        </TabsContent>
 
-        <TabsContent value="manual">
-          <div className="flex items-center justify-between p-4 border rounded-lg">
-            <span>Download User Manual</span>
-            <Button
-              variant="outline"
-              onClick={() => window.open(product.manual, "_blank")}
-            >
-              <FileDown className="mr-2 h-4 w-4" />
-              Download PDF
-            </Button>
+          {/* Buy Now Button */}
+          <div className="h-12">
+            <button className="w-full h-full bg-[#DC2626] text-white font-semibold rounded-md hover:bg-red-700 transition-colors">
+              Buy Now
+            </button>
           </div>
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
     </div>
   );
 };
