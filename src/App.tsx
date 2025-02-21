@@ -14,6 +14,7 @@ import Admin from "./pages/Admin";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import Sitemap from "@/pages/Sitemap";
 import Footer from "./components/Footer";
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
             <Route path="/support/contact" element={<Contact />} />
             <Route path="/support/faq" element={<FAQ />} />
             <Route path="/support/service-center" element={<ServiceCenter />} />
+            <Route path="/sitemap" element={<Sitemap />} />
             <Route 
               path="/admin" 
               element={
@@ -45,7 +47,10 @@ function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
-        <Footer />
+        <Routes>
+          <Route path="/admin" element={null} />
+          <Route path="*" element={<Footer />} />
+        </Routes>
       </div>
     </Router>
   );
