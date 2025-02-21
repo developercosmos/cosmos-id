@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
-import { GoogleMap, useLoadScript, MarkerF, InfoWindowF } from "@react-google-maps/api";
+import { GoogleMap, useLoadScript, MarkerF as MarkerAdvanced, InfoWindowF } from "@react-google-maps/api";
 import { SERVER_URL, fetchConfigurations } from "@/config/serverConfig";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
@@ -26,7 +26,6 @@ const ServiceCenter = () => {
   const [googleMapsApiKey, setGoogleMapsApiKey] = useState("");
   const { toast } = useToast();
 
-  // Fetch Google Maps API key from configurations
   useEffect(() => {
     const getApiKey = async () => {
       try {
@@ -53,6 +52,8 @@ const ServiceCenter = () => {
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: googleMapsApiKey || "",
+    // Prevent multiple Google Maps JavaScript API loading
+    id: 'google-map-script'
   });
 
   const { data: serviceCenters, isError: isServiceCentersError } = useQuery({
@@ -60,7 +61,13 @@ const ServiceCenter = () => {
     queryFn: async () => {
       const response = await fetch(`${SERVER_URL}/src/server/serviceCenter.php`);
       if (!response.ok) throw new Error('Failed to fetch service centers');
-      return response.json() as Promise<ServiceCenter[]>;
+      const data = await response.json();
+      // Ensure latitude and longitude are numbers
+      return data.map((center: any) => ({
+        ...center,
+        latitude: Number(center.latitude),
+        longitude: Number(center.longitude)
+      })) as ServiceCenter[];
     },
     enabled: !!googleMapsApiKey,
   });
@@ -104,7 +111,7 @@ const ServiceCenter = () => {
 
   const handleCenterSelect = (center: ServiceCenter) => {
     setSelectedCenter(center);
-    setMapCenter({ lat: Number(center.latitude), lng: Number(center.longitude) });
+    setMapCenter({ lat: center.latitude, lng: center.longitude });
   };
 
   if (!googleMapsApiKey) {
@@ -197,7 +204,7 @@ const ServiceCenter = () => {
                   }}
                 >
                   {userLocation && (
-                    <MarkerF
+                    <MarkerAdvanced
                       position={userLocation}
                       icon={{
                         url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF0000' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E",
@@ -207,7 +214,7 @@ const ServiceCenter = () => {
                   )}
                   
                   {filteredCenters?.map((center) => (
-                    <MarkerF
+                    <MarkerAdvanced
                       key={center.id}
                       position={{ lat: center.latitude, lng: center.longitude }}
                       onClick={() => setSelectedCenter(center)}
@@ -224,7 +231,7 @@ const ServiceCenter = () => {
                           </div>
                         </InfoWindowF>
                       )}
-                    </MarkerF>
+                    </MarkerAdvanced>
                   ))}
                 </GoogleMap>
               </div>
