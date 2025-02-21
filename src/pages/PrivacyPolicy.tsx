@@ -18,51 +18,49 @@ const PrivacyPolicy = () => {
     },
   });
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-white">
-        <Navbar />
-        <div className="container mx-auto px-4 py-8 mt-20">
-          <Card>
-            <CardContent className="p-6">
-              <Skeleton className="h-8 w-48 mb-4" />
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-3/4" />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="min-h-screen bg-white">
-        <Navbar />
-        <div className="container mx-auto px-4 py-8 mt-20">
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-red-500">Failed to load privacy policy</div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8 mt-20">
+  const renderContent = () => {
+    if (isLoading) {
+      return (
         <Card>
           <CardContent className="p-6">
-            <h1 className="text-2xl font-bold mb-6">Kebijakan Privasi</h1>
-            <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: privacyPolicy || '' }} />
+            <Skeleton className="h-8 w-48 mb-4" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-3/4" />
           </CardContent>
         </Card>
-      </div>
-    </div>
+      );
+    }
+
+    if (isError) {
+      return (
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-red-500">Failed to load privacy policy</div>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <h1 className="text-2xl font-bold mb-6">Kebijakan Privasi</h1>
+          <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: privacyPolicy || '' }} />
+        </CardContent>
+      </Card>
+    );
+  };
+
+  return (
+    <>
+      <Navbar />
+      <main className="min-h-screen pt-20 bg-white">
+        <div className="container mx-auto px-4 py-8">
+          {renderContent()}
+        </div>
+      </main>
+    </>
   );
 };
 
