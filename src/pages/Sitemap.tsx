@@ -2,7 +2,7 @@
 import Navbar from "../components/Navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { Sitemap as SitemapIcon } from "lucide-react";
+import { Map } from "lucide-react";
 
 const Sitemap = () => {
   const sitemapData = {
@@ -32,7 +32,7 @@ const Sitemap = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-2 mb-6">
-              <SitemapIcon className="h-6 w-6 text-primary" />
+              <Map className="h-6 w-6 text-primary" />
               <h1 className="text-2xl font-bold">Sitemap</h1>
             </div>
             
