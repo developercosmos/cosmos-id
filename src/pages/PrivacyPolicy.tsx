@@ -1,11 +1,11 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { SERVER_URL } from "@/config/serverConfig";
-import Navbar from "@/components/Navbar";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const PrivacyPolicy = () => {
-  const { data: privacyPolicy, isLoading } = useQuery({
+  const { data: privacyPolicy, isLoading, isError } = useQuery({
     queryKey: ['privacyPolicy'],
     queryFn: async () => {
       const response = await fetch(`${SERVER_URL}/src/server/privacy-policy.php`);
@@ -17,24 +17,41 @@ const PrivacyPolicy = () => {
     },
   });
 
-  return (
-    <div className="min-h-screen bg-white">
-      <Navbar />
-      <div className="container mx-auto px-4 py-20">
-        <h1 className="text-3xl font-bold mb-8">Privacy Policy</h1>
-        {isLoading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-4 w-full" />
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="p-6">
+            <Skeleton className="h-8 w-48 mb-4" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-full mb-2" />
             <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-4 w-5/6" />
-          </div>
-        ) : (
-          <div 
-            className="prose max-w-none"
-            dangerouslySetInnerHTML={{ __html: privacyPolicy || 'No privacy policy content available.' }} 
-          />
-        )}
+          </CardContent>
+        </Card>
       </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-red-500">Failed to load privacy policy</div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <Card>
+        <CardContent className="p-6">
+          <h1 className="text-2xl font-bold mb-6">Kebijakan Privasi</h1>
+          <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: privacyPolicy || '' }} />
+        </CardContent>
+      </Card>
     </div>
   );
 };
