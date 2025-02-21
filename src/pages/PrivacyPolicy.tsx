@@ -20,7 +20,7 @@ const PrivacyPolicy = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white relative">
+      <div className="min-h-screen bg-white">
         <Navbar />
         <div className="container mx-auto px-4 py-8 mt-20">
           <Card>
@@ -38,7 +38,7 @@ const PrivacyPolicy = () => {
 
   if (isError) {
     return (
-      <div className="min-h-screen bg-white relative">
+      <div className="min-h-screen bg-white">
         <Navbar />
         <div className="container mx-auto px-4 py-8 mt-20">
           <Card>
@@ -52,7 +52,7 @@ const PrivacyPolicy = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white relative">
+    <div className="min-h-screen bg-white">
       <Navbar />
       <div className="container mx-auto px-4 py-8 mt-20">
         <Card>
