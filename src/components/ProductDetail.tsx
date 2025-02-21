@@ -11,14 +11,14 @@ interface ProductDetailProps {
 
 const ProductDetail = ({ product }: ProductDetailProps) => {
   const [selectedImage, setSelectedImage] = useState(0);
-  const [imageError, setImageError] = useState(false);
+  const [imageError, setImageError] = useState<{ [key: string]: boolean }>({});
 
   const getFallbackImage = () => {
     return "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=500";
   };
 
-  const getImageUrl = (imageUrl: string) => {
-    if (imageError || !imageUrl) {
+  const getImageUrl = (imageUrl: string, isThumb: boolean = false) => {
+    if (imageError[imageUrl] || !imageUrl) {
       return getFallbackImage();
     }
     
@@ -30,6 +30,14 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
     // Clean the image URL to ensure it only contains the filename
     const filename = imageUrl.split('/').pop();
     return `${SERVER_URL}/public/uploads/${filename}`;
+  };
+
+  const handleImageError = (imageUrl: string) => {
+    setImageError(prev => ({
+      ...prev,
+      [imageUrl]: true
+    }));
+    console.log(`Image failed to load: ${imageUrl}`);
   };
 
   return (
@@ -48,15 +56,15 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
               src={getImageUrl(product.images[selectedImage])}
               alt={product.name}
               className="w-full h-full object-cover"
-              onError={() => setImageError(true)}
+              onError={() => handleImageError(product.images[selectedImage])}
             />
           </div>
           <div className="flex gap-3">
             {product.images.map((image, index) => (
               <button
                 key={index}
-                className={`flex-1 h-[108px] bg-[#D9D9D9] rounded-lg overflow-hidden ${
-                  selectedImage === index ? 'border-2 border-[#18181B]' : ''
+                className={`flex-1 h-[108px] bg-[#D9D9D9] rounded-lg overflow-hidden transition-all ${
+                  selectedImage === index ? 'border-2 border-[#18181B] ring-1 ring-[#18181B]' : 'hover:opacity-80'
                 }`}
                 onClick={() => setSelectedImage(index)}
               >
@@ -64,7 +72,7 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
                   src={getImageUrl(image)}
                   alt={`${product.name} ${index + 1}`}
                   className="w-full h-full object-cover"
-                  onError={() => setImageError(true)}
+                  onError={() => handleImageError(image)}
                 />
               </button>
             ))}
