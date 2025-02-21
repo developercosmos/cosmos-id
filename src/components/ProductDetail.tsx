@@ -41,16 +41,16 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
   };
 
   return (
-    <div className="w-[1280px] pt-6 pb-14 px-8 pr-6 bg-white rounded-3xl">
-      <div className="flex justify-end">
+    <div className="max-w-[1280px] w-full pt-6 pb-14 px-6 bg-white rounded-3xl">
+      <div className="flex justify-end mb-4">
         <DialogClose className="relative">
           <X className="w-8 h-8 text-[#101828]" />
         </DialogClose>
       </div>
 
-      <div className="flex gap-12">
+      <div className="flex gap-8">
         {/* Left side - Images */}
-        <div className="w-[640px] flex flex-col gap-3">
+        <div className="w-[580px] flex flex-col gap-3">
           <div className="h-[468px] bg-[#D9D9D9] rounded-xl overflow-hidden">
             <img
               src={getImageUrl(product.images[selectedImage])}
@@ -63,7 +63,7 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
             {product.images.map((image, index) => (
               <button
                 key={index}
-                className={`w-[150px] aspect-square bg-[#D9D9D9] rounded-lg overflow-hidden transition-all flex-shrink-0 ${
+                className={`w-[135px] aspect-square bg-[#D9D9D9] rounded-lg overflow-hidden transition-all flex-shrink-0 ${
                   selectedImage === index ? 'border-2 border-[#18181B] ring-1 ring-[#18181B]' : 'hover:opacity-80'
                 }`}
                 onClick={() => setSelectedImage(index)}
