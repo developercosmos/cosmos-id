@@ -1,5 +1,5 @@
 
-import { Settings, Package, Calendar, Image, Users, Building } from "lucide-react";
+import { Settings, Package, Calendar, Image, Users, Building, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AdminNavItem } from "./types";
@@ -18,6 +18,7 @@ const AdminSidebar = ({ activeTab, onTabChange }: AdminSidebarProps) => {
     { value: "slides", label: "Slider Images", icon: <Image className="h-5 w-5" /> },
     { value: "users", label: "User Management", icon: <Users className="h-5 w-5" /> },
     { value: "service-centers", label: "Service Centers", icon: <Building className="h-5 w-5" /> },
+    { value: "privacy-policy", label: "Privacy Policy", icon: <FileText className="h-5 w-5" /> },
   ];
 
   return (
@@ -37,4 +38,3 @@ const AdminSidebar = ({ activeTab, onTabChange }: AdminSidebarProps) => {
 };
 
 export default AdminSidebar;
-
