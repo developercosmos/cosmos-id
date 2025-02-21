@@ -12,6 +12,7 @@ interface AdminSidebarProps {
 
 const AdminSidebar = ({ activeTab, onTabChange }: AdminSidebarProps) => {
   const navItems: AdminNavItem[] = [
+    { value: "settings", label: "General Setup", icon: <Settings className="h-5 w-5" /> },
     { value: "products", label: "Products", icon: <Package className="h-5 w-5" /> },
     { value: "campaign", label: "Campaign", icon: <Settings className="h-5 w-5" /> },
     { value: "events", label: "Events", icon: <Calendar className="h-5 w-5" /> },
