@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useCallback } from "react";
 import Navbar from "../../components/Navbar";
 import { GoogleMap, useLoadScript, MarkerF as MarkerAdvanced, InfoWindowF } from "@react-google-maps/api";
@@ -19,6 +20,9 @@ interface ServiceCenter {
 
 const DEFAULT_ZOOM = 5;
 const FOCUSED_ZOOM = 15;
+
+// Define libraries as a static constant
+const libraries: ("places")[] = ["places"];
 
 const ServiceCenter = () => {
   const [selectedCenter, setSelectedCenter] = useState<ServiceCenter | null>(null);
@@ -47,8 +51,8 @@ const ServiceCenter = () => {
   const googleMapsApiKey = configs?.GOOGLE_MAPS_API_KEY || "";
 
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: googleMapsApiKey,
-    libraries: ['places'],
+    googleMapsApiKey,
+    libraries,
     id: 'google-map-script',
   });
 
@@ -217,7 +221,7 @@ const ServiceCenter = () => {
                 </Button>
               </div>
               <div className="h-[600px] rounded-lg overflow-hidden shadow-lg">
-                {googleMapsApiKey && isLoaded ? (
+                {isLoaded ? (
                   <GoogleMap
                     zoom={zoom}
                     center={mapCenter}
