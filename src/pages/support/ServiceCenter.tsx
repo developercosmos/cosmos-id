@@ -30,15 +30,18 @@ const ServiceCenter = () => {
     queryKey: ['configurations'],
     queryFn: fetchConfigurations,
     retry: 2,
-    onError: (error) => {
-      console.error('Error fetching configurations:', error);
+  });
+
+  // Show error toast if configuration fetch fails
+  useEffect(() => {
+    if (isConfigError) {
       toast({
         title: "Error",
         description: "Failed to load configuration",
         variant: "destructive",
       });
     }
-  });
+  }, [isConfigError, toast]);
 
   const googleMapsApiKey = configs?.GOOGLE_MAPS_API_KEY || "";
 
@@ -203,7 +206,7 @@ const ServiceCenter = () => {
                     />
                   )}
                   
-                  {filteredCenters?.map((center) => (
+                  {serviceCenters?.map((center) => (
                     <MarkerAdvanced
                       key={center.id}
                       position={{ lat: center.latitude, lng: center.longitude }}
@@ -237,7 +240,7 @@ const ServiceCenter = () => {
                 />
               </div>
               <div className="space-y-4 max-h-[540px] overflow-y-auto">
-                {filteredCenters?.map((center) => (
+                {serviceCenters?.map((center) => (
                   <div
                     key={center.id}
                     className={`p-4 border rounded-lg hover:border-primary transition-colors cursor-pointer ${
