@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import { GoogleMap, useLoadScript, MarkerF as MarkerAdvanced, InfoWindowF } from "@react-google-maps/api";
@@ -30,9 +29,12 @@ const ServiceCenter = () => {
     const getApiKey = async () => {
       try {
         const configs = await fetchConfigurations();
+        console.log('Fetched configurations:', configs); // Debug log
         if (configs.GOOGLE_MAPS_API_KEY) {
           setGoogleMapsApiKey(configs.GOOGLE_MAPS_API_KEY);
+          console.log('Set Google Maps API Key'); // Debug log
         } else {
+          console.error('Google Maps API key not found in configurations'); // Debug log
           toast({
             title: "Configuration Error",
             description: "Google Maps API key not found in configuration",
@@ -40,6 +42,7 @@ const ServiceCenter = () => {
           });
         }
       } catch (error) {
+        console.error('Error fetching configurations:', error); // Debug log
         toast({
           title: "Error",
           description: "Failed to load configuration",
@@ -52,8 +55,7 @@ const ServiceCenter = () => {
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: googleMapsApiKey || "",
-    // Prevent multiple Google Maps JavaScript API loading
-    id: 'google-map-script'
+    id: 'google-map-script', // Prevent multiple Google Maps JavaScript API loading
   });
 
   const { data: serviceCenters, isError: isServiceCentersError } = useQuery({
@@ -187,53 +189,59 @@ const ServiceCenter = () => {
                 </Button>
               </div>
               <div className="h-[600px] rounded-lg overflow-hidden shadow-lg">
-                <GoogleMap
-                  zoom={5}
-                  center={mapCenter}
-                  mapContainerClassName="w-full h-full"
-                  options={{
-                    streetViewControl: false,
-                    mapTypeControl: false,
-                    styles: [
-                      {
-                        featureType: "all",
-                        elementType: "geometry",
-                        stylers: [{ visibility: "simplified" }]
-                      }
-                    ]
-                  }}
-                >
-                  {userLocation && (
-                    <MarkerAdvanced
-                      position={userLocation}
-                      icon={{
-                        url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF0000' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E",
-                        scaledSize: new google.maps.Size(16, 16),
-                      }}
-                    />
-                  )}
-                  
-                  {filteredCenters?.map((center) => (
-                    <MarkerAdvanced
-                      key={center.id}
-                      position={{ lat: center.latitude, lng: center.longitude }}
-                      onClick={() => setSelectedCenter(center)}
-                    >
-                      {selectedCenter?.id === center.id && (
-                        <InfoWindowF
-                          position={{ lat: center.latitude, lng: center.longitude }}
-                          onCloseClick={() => setSelectedCenter(null)}
-                        >
-                          <div>
-                            <h3 className="font-bold">{center.name}</h3>
-                            <p className="text-sm">{center.address}</p>
-                            <p className="text-sm">Phone: {center.phone}</p>
-                          </div>
-                        </InfoWindowF>
-                      )}
-                    </MarkerAdvanced>
-                  ))}
-                </GoogleMap>
+                {googleMapsApiKey ? (
+                  <GoogleMap
+                    zoom={5}
+                    center={mapCenter}
+                    mapContainerClassName="w-full h-full"
+                    options={{
+                      streetViewControl: false,
+                      mapTypeControl: false,
+                      styles: [
+                        {
+                          featureType: "all",
+                          elementType: "geometry",
+                          stylers: [{ visibility: "simplified" }]
+                        }
+                      ]
+                    }}
+                  >
+                    {userLocation && (
+                      <MarkerAdvanced
+                        position={userLocation}
+                        icon={{
+                          url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FF0000' width='24' height='24'%3E%3Ccircle cx='12' cy='12' r='8'/%3E%3C/svg%3E",
+                          scaledSize: new google.maps.Size(16, 16),
+                        }}
+                      />
+                    )}
+                    
+                    {filteredCenters?.map((center) => (
+                      <MarkerAdvanced
+                        key={center.id}
+                        position={{ lat: center.latitude, lng: center.longitude }}
+                        onClick={() => setSelectedCenter(center)}
+                      >
+                        {selectedCenter?.id === center.id && (
+                          <InfoWindowF
+                            position={{ lat: center.latitude, lng: center.longitude }}
+                            onCloseClick={() => setSelectedCenter(null)}
+                          >
+                            <div>
+                              <h3 className="font-bold">{center.name}</h3>
+                              <p className="text-sm">{center.address}</p>
+                              <p className="text-sm">Phone: {center.phone}</p>
+                            </div>
+                          </InfoWindowF>
+                        )}
+                      </MarkerAdvanced>
+                    ))}
+                  </GoogleMap>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                    <p>Loading Google Maps...</p>
+                  </div>
+                )}
               </div>
             </div>
             <div className="space-y-4">
