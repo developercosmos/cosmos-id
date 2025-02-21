@@ -51,11 +51,11 @@ const ProductDetail = ({ product }: ProductDetailProps) => {
       <div className="flex gap-8">
         {/* Left side - Images */}
         <div className="w-[42%] flex flex-col gap-3">
-          <div className="aspect-[4/3] bg-[#D9D9D9] rounded-xl overflow-hidden">
+          <div className="w-full bg-[#D9D9D9] rounded-xl overflow-hidden">
             <img
               src={getImageUrl(product.images[selectedImage])}
               alt={product.name}
-              className="w-full h-full object-contain"
+              className="w-full h-auto object-contain"
               onError={() => handleImageError(product.images[selectedImage])}
             />
           </div>
